@@ -98,7 +98,7 @@ export default function Home() {
                 posts.map(post => (
                     <div key={post._id} style={{ border: '1px solid #ccc', margin: '10px 0', padding: '15px', borderRadius: '5px' }}>
                         <p>{post.content}</p>
-                        <small style={{ color: 'gray' }}>Posted by: {post.author.name}</small>
+                        <small style={{ color: 'gray' }}>Posted by: {post.author.username}</small>
                     </div>
                 ))
             )}
