@@ -8,7 +8,7 @@ export default function Home() {
     const navigate = useNavigate();
 
     // Base URL of your newly deployed Render server
-    const API_URL = 'https://social-network-server-mfxh.onrender.com/api/posts';
+    const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/posts';
 
     useEffect(() => {
         // 1. Retrieve the token from the browser's local storage

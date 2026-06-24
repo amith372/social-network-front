@@ -11,7 +11,7 @@ export default function Register() {
     const navigate = useNavigate();
 
     // Make sure to use your live Render URL here as well!
-    const API_URL = 'https://social-network-server-mfxh.onrender.com/api/users/register';
+    const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users/register';
 
     const handleRegister = async (e) => {
         e.preventDefault(); 
