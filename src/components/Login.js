@@ -10,10 +10,11 @@ export default function Login() {
     const navigate = useNavigate();
 
     // The live Render URL for the login endpoint
-    const API_URL = 'https://social-network-server-mfxh.onrender.com/api/users/login';
+    const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users/login';
 
     const handleLogin = async (e) => {
         e.preventDefault(); 
+        setErrorMsg('');
         
         try {
             const response = await axios.post(API_URL, {
@@ -31,13 +32,27 @@ export default function Login() {
             window.location.reload();
             
         } catch (error) {
+            console.error("Full Error Object:", error);
+
             if (error.response) {
-                setErrorMsg(error.response.data.message);
+                
+                console.error("Server returned status:", error.response.status);
+                console.error("Response Data:", error.response.data);
+                
+                setErrorMsg(error.response.data.message || "Invalid login credentials.");
+                
+            } else if (error.request) {
+                console.error("No response received from the server. Request details:", error.request);
+                setErrorMsg("No response from the server, please check if it is running.");
+                
             } else {
-                setErrorMsg("Server connection failed");
+                
+                console.error("Error setting up the request:", error.message);
+                setErrorMsg("A general system error occurred.");
             }
         }
     };
+    
 
     return (
         <div style={{ padding: '20px', textAlign: 'center' }}>
