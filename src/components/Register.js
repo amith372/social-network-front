@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 export default function Register() {
-    const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
@@ -18,7 +18,7 @@ export default function Register() {
         
         try {
             const response = await axios.post(API_URL, {
-                name: name,
+                username: username,
                 email: email,
                 password: password
             });
@@ -47,8 +47,8 @@ export default function Register() {
 
             <form onSubmit={handleRegister} style={{ display: 'inline-block', textAlign: 'left' }}>
                 <div style={{ marginBottom: '10px' }}>
-                    <label>Full Name: </label><br />
-                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} required />
+                    <label>Username: </label><br />
+                    <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
                 </div>
                 <div style={{ marginBottom: '10px' }}>
                     <label>Email: </label><br />

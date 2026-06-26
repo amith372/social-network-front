@@ -1,14 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-export default function Navbar() {
+export default function Navbar({ isLoggedIn, username, onLogout }) {
     const navigate = useNavigate();
-    const token = localStorage.getItem('token');
 
-    const handleLogout = () => {
-        // Clear the token from memory
-        localStorage.removeItem('token');
-        // Redirect to login page
+    const handleLogoutClick = () => {
+        onLogout(); 
         navigate('/login');
     };
 
@@ -19,11 +16,15 @@ export default function Navbar() {
             </h3>
             
             <div>
-                {token ? (
-                    // Buttons to show when logged in
-                    <button onClick={handleLogout} style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>
-                        Logout
-                    </button>
+                {isLoggedIn ? (
+                    <div>
+                        <span style={{ color: '#fff', fontWeight: 'bold', marginRight: '15px' }}>
+                                Welcome, {username}!
+                        </span>
+                        <button onClick={handleLogoutClick} style={{ backgroundColor: '#7a91f5', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>
+                            Logout
+                        </button>
+                    </div>
                 ) : (
                     // Buttons to show when NOT logged in
                     <>
