@@ -11,7 +11,7 @@ export default function Home() {
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/posts';
 
     useEffect(() => {
-        // 1. Retrieve the token from the browser's local storage
+        // Retrieve the token from the browser's local storage
         const token = localStorage.getItem('token');
         
         // If there is no token (user is not logged in), redirect to the login page
