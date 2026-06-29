@@ -101,7 +101,7 @@ export default function MainFeed({ selectedGroup }) {
             ) : posts.length === 0 ? (
                 <p style={{ textAlign: 'center', color: '#777' }}>No posts to show. Be the first to post!</p>
             ) : (
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '500px', overflowY: 'auto', paddingRight: '10px' }}>
                     {posts.map(post => (
                         <PostItem key={post._id} post={post} />
                     ))}
