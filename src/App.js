@@ -24,10 +24,15 @@ function App() {
         setUsername('');
     }
 
+    const handleUpdateUsername = (newUsername) => {
+        localStorage.setItem('username', newUsername);
+        setUsername(newUsername);
+    };
+
     return (
         <Router>
             {/* The Navbar will now appear on every page */}
-            <Navbar isLoggedIn={isLoggedIn} username={username} onLogout={handleLogout} />
+            <Navbar isLoggedIn={isLoggedIn} username={username} onLogout={handleLogout} onUpdateUsername={handleUpdateUsername} />
             
             <div style={{ marginTop: '20px' }}>
                 <Routes>
