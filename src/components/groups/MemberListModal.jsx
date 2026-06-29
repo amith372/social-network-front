@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function MemberListModal({ group, currentUserId, isAdmin, onClose }) {
+export default function MemberListModal({ group, currentUserId, isAdmin, onClose, onGroupUpdate }) {
     const [members, setMembers] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -16,13 +16,19 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
                 const token = localStorage.getItem('token');
                 const headers = { Authorization: `Bearer ${token}` };
                 const res = await axios.get(USERS_API_URL, { headers });
-                
+
+                // Add the current user to the data pool since they are excluded from the API response
+                const currentUsername = localStorage.getItem('username');
+                if (currentUserId && currentUsername) {
+                    res.data.push({ _id: currentUserId, username: currentUsername });
+                }
+
                 // Group members array might contain IDs or populated objects. We need their IDs to filter correctly.
                 const memberIds = (group.members || []).map(m => typeof m === 'object' ? m._id : m);
-                
+
                 const groupMembers = res.data.filter(u => memberIds.includes(u._id));
                 const nonMembers = res.data.filter(u => !memberIds.includes(u._id));
-                
+
                 setMembers(groupMembers);
                 setAllUsers(nonMembers);
             } catch (err) {
@@ -39,16 +45,19 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
         try {
             const token = localStorage.getItem('token');
             const headers = { Authorization: `Bearer ${token}` };
-            
+
             // Current members minus the one we remove
             const updatedMemberIds = members.filter(m => m._id !== userId).map(m => m._id);
-            
+
             await axios.put(`${GROUPS_API_URL}/${group._id}`, { members: updatedMemberIds }, { headers });
-            
+
             const removedUser = members.find(m => m._id === userId);
             setMembers(members.filter(m => m._id !== userId));
             if (removedUser) {
                 setAllUsers([...allUsers, removedUser]);
+            }
+            if (onGroupUpdate) {
+                onGroupUpdate({ ...group, members: updatedMemberIds });
             }
         } catch (err) {
             console.error("Failed to remove member", err);
@@ -61,15 +70,18 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
         try {
             const token = localStorage.getItem('token');
             const headers = { Authorization: `Bearer ${token}` };
-            
+
             const updatedMemberIds = [...members.map(m => m._id), selectedNewUser];
-            
+
             await axios.put(`${GROUPS_API_URL}/${group._id}`, { members: updatedMemberIds }, { headers });
-            
+
             const addedUser = allUsers.find(u => u._id === selectedNewUser);
             if (addedUser) {
                 setMembers([...members, addedUser]);
                 setAllUsers(allUsers.filter(u => u._id !== selectedNewUser));
+            }
+            if (onGroupUpdate) {
+                onGroupUpdate({ ...group, members: updatedMemberIds });
             }
             setSelectedNewUser('');
         } catch (err) {
@@ -85,7 +97,7 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
                     <h3 style={{ margin: 0 }}>{group.name} - Members</h3>
                     <button onClick={onClose} style={styles.closeBtn}>X</button>
                 </div>
-                
+
                 {isLoading ? (
                     <p>Loading members...</p>
                 ) : (
@@ -105,8 +117,8 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
                             <div style={styles.addSection}>
                                 <h4 style={{ margin: '0 0 10px 0' }}>Add New Member</h4>
                                 <div style={{ display: 'flex', gap: '5px' }}>
-                                    <select 
-                                        value={selectedNewUser} 
+                                    <select
+                                        value={selectedNewUser}
                                         onChange={(e) => setSelectedNewUser(e.target.value)}
                                         style={{ flex: 1, padding: '5px' }}
                                     >

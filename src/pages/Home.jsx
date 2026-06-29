@@ -22,7 +22,7 @@ export default function Home() {
 
             {/* feed column*/}
             <div style={styles.centerColumn}>
-                <MainFeed selectedGroup={selectedGroup} />
+                <MainFeed selectedGroup={selectedGroup} setSelectedGroup={setSelectedGroup} />
             </div>
 
             {/* groups column */}

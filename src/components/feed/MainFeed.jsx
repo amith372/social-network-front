@@ -7,7 +7,7 @@ import MemberListModal from '../groups/MemberListModal';
 import { io } from 'socket.io-client';
 
 // 1. מקבלים את selectedGroupId כ-Prop במקום להגדיר אותו כקבוע
-export default function MainFeed({ selectedGroup }) {
+export default function MainFeed({ selectedGroup, setSelectedGroup }) {
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [errorMsg, setErrorMsg] = useState('');
@@ -154,6 +154,7 @@ export default function MainFeed({ selectedGroup }) {
                     currentUserId={currentUserId}
                     isAdmin={isAdmin}
                     onClose={() => setShowMembers(false)}
+                    onGroupUpdate={setSelectedGroup}
                 />
             )}
         </div>
