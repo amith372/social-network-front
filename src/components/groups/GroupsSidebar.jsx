@@ -8,18 +8,18 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
     const [errorMsg, setErrorMsg] = useState('');
 
     // --- State של יצירת קבוצה ---
-    const [isCreating, setIsCreating] = useState(false); 
-    const [newGroupName, setNewGroupName] = useState(''); 
-    const [isSubmitting, setIsSubmitting] = useState(false); 
+    const [isCreating, setIsCreating] = useState(false);
+    const [newGroupName, setNewGroupName] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // --- State חדש עבור בחירת משתמשים לקבוצה ---
-    const [allUsers, setAllUsers] = useState([]); 
-    const [selectedUsers, setSelectedUsers] = useState([]); 
+    const [allUsers, setAllUsers] = useState([]);
+    const [selectedUsers, setSelectedUsers] = useState([]);
 
     // --- State של החיפוש והטאבים ---
-    const [activeTab, setActiveTab] = useState('myGroups'); 
-    const [searchQuery, setSearchQuery] = useState(''); 
-    const [searchResults, setSearchResults] = useState([]); 
+    const [activeTab, setActiveTab] = useState('myGroups');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
 
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/groups';
@@ -35,9 +35,9 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                     axios.get(`${API_URL}?myGroups=true&isGroupChat=true`, { headers }),
                     axios.get(USERS_API_URL, { headers })
                 ]);
-                
+
                 setGroups(groupsRes.data);
-                setAllUsers(usersRes.data); 
+                setAllUsers(usersRes.data);
             } catch (error) {
                 console.error("Error fetching sidebar data:", error);
                 setErrorMsg("Failed to load data");
@@ -60,24 +60,24 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
         e.preventDefault();
         if (!newGroupName.trim()) return;
         setIsSubmitting(true);
-        
+
         try {
             const token = localStorage.getItem('token');
-            
-            const response = await axios.post(API_URL, 
-                { 
+
+            const response = await axios.post(API_URL,
+                {
                     name: newGroupName,
-                    members: selectedUsers 
-                }, 
+                    members: selectedUsers
+                },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
             const newGroup = response.data;
             setGroups((prev) => [...prev, newGroup]);
-            
+
             // 2. מעבירים את אובייקט הקבוצה החדש בשלמותו!
-            setSelectedGroup(newGroup); 
-            
+            setSelectedGroup(newGroup);
+
             setNewGroupName('');
             setSelectedUsers([]);
             setIsCreating(false);
@@ -95,7 +95,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
         setIsSearching(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`${API_URL}/search?q=${searchQuery}`, {
+            const response = await axios.get(`${API_URL}?q=${searchQuery}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSearchResults(response.data);
@@ -120,7 +120,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
             <div style={styles.innerListBox}>
                 {activeTab === 'myGroups' && (
                     <>
-                        <div 
+                        <div
                             onClick={() => setSelectedGroup({ _id: "000000000000000000000000", name: "Public Feed" })}
                             style={{
                                 ...styles.groupItem,
@@ -132,14 +132,14 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                         </div>
 
                         {errorMsg && <p style={{ color: 'red', fontSize: '14px' }}>{errorMsg}</p>}
-                        
+
                         {isLoading ? (
                             <p style={{ color: '#777' }}>Loading...</p>
                         ) : (
                             groups.map(group => (
-                                <div 
-                                    key={group._id} 
-                                    onClick={() => setSelectedGroup(group)} 
+                                <div
+                                    key={group._id}
+                                    onClick={() => setSelectedGroup(group)}
                                     style={{
                                         ...styles.groupItem,
                                         fontWeight: selectedGroup && selectedGroup._id === group._id ? 'bold' : 'normal',
@@ -156,9 +156,9 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                 {activeTab === 'search' && (
                     <>
                         <form onSubmit={handleSearch} style={{ display: 'flex', marginBottom: '15px' }}>
-                            <input 
-                                type="text" 
-                                placeholder="Find a group..." 
+                            <input
+                                type="text"
+                                placeholder="Find a group..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 style={{ flexGrow: 1, padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
@@ -170,14 +170,14 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                             <p style={{ color: '#777' }}>Searching...</p>
                         ) : (
                             searchResults.map(group => (
-                                <div 
-                                    key={group._id} 
-                                    onClick={() => setSelectedGroup(group)} 
-                                    style={{ 
-                                        ...styles.groupItem, 
-                                        backgroundColor: selectedGroup && selectedGroup._id === group._id ? '#e6f7ff' : '#f8f9fa', 
+                                <div
+                                    key={group._id}
+                                    onClick={() => setSelectedGroup(group)}
+                                    style={{
+                                        ...styles.groupItem,
+                                        backgroundColor: selectedGroup && selectedGroup._id === group._id ? '#e6f7ff' : '#f8f9fa',
                                         fontWeight: selectedGroup && selectedGroup._id === group._id ? 'bold' : 'normal',
-                                        marginBottom: '5px' 
+                                        marginBottom: '5px'
                                     }}
                                 >
                                     {group.name}
@@ -191,21 +191,21 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
             <div style={styles.footerRow}>
                 {isCreating ? (
                     <form onSubmit={handleCreateGroup} style={styles.createForm}>
-                        <input 
-                            type="text" 
-                            placeholder="Group name..." 
+                        <input
+                            type="text"
+                            placeholder="Group name..."
                             value={newGroupName}
                             onChange={(e) => setNewGroupName(e.target.value)}
                             style={styles.createInput}
                             required
                             autoFocus
                         />
-                        
+
                         <div style={styles.usersCheckboxContainer}>
                             <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: '#555', textAlign: 'left' }}>Add members:</p>
                             {allUsers.map(user => (
                                 <label key={user._id} style={styles.checkboxLabel}>
-                                    <input 
+                                    <input
                                         type="checkbox"
                                         checked={selectedUsers.includes(user._id)}
                                         onChange={() => handleUserCheckboxChange(user._id)}
