@@ -38,7 +38,7 @@ function App() {
                 <Routes>
                     <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
                     <Route path="/register" element={<Register onLoginSuccess={handleLoginSuccess} />} />
-                    <Route path="/" element={<Home />} />
+                    <Route path="/" element={isLoggedIn ? <Home /> : <Navigate to="/login" replace />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </div>
