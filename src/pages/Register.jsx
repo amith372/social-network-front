@@ -1,18 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 export default function Register({ onLoginSuccess }) {
-    // one object to hold all form data for username, email, and password
     const [formData, setFormData] = useState({
         username: '',
         email: '',
-        password: ''
+        password: '',
+        age: '',
+        gender: 'Prefer not to say',
+        language: []
     });
     const [errorMsg, setErrorMsg] = useState('');
-    const [isLoading, setIsLoading] = useState(false); // מצב טעינה לחוויית משתמש טובה יותר
+    const [isLoading, setIsLoading] = useState(false);
+    const [languages, setLanguages] = useState([]);
     
     const navigate = useNavigate();
+
+    const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users/register';
+
+    useEffect(() => {
+        const fetchLanguages = async () => {
+            try {
+                const res = await axios.get('https://libretranslate.com/languages');
+                setLanguages(res.data);
+            } catch (err) {
+                console.error('Failed to fetch languages', err);
+            }
+        };
+        fetchLanguages();
+    }, []);
 
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users/register';
 
@@ -20,6 +37,14 @@ export default function Register({ onLoginSuccess }) {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
+        });
+    };
+
+    const handleLanguageChange = (e) => {
+        const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+        setFormData({
+            ...formData,
+            language: selectedOptions
         });
     };
 
@@ -98,6 +123,51 @@ export default function Register({ onLoginSuccess }) {
                         onChange={handleChange} 
                         required 
                     />
+                </div>
+                <div style={{ marginBottom: '10px' }}>
+                    <label htmlFor="age">Age: </label><br />
+                    <input 
+                        type="number" 
+                        id="age"
+                        name="age" 
+                        value={formData.age} 
+                        onChange={handleChange} 
+                        required 
+                        min="0"
+                    />
+                </div>
+                <div style={{ marginBottom: '10px' }}>
+                    <label htmlFor="gender">Gender: </label><br />
+                    <select 
+                        id="gender"
+                        name="gender" 
+                        value={formData.gender} 
+                        onChange={handleChange} 
+                        required 
+                        style={{ width: '100%', padding: '5px' }}
+                    >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
+                <div style={{ marginBottom: '15px' }}>
+                    <label htmlFor="language">Languages: </label><br />
+                    <select 
+                        multiple
+                        id="language"
+                        name="language" 
+                        value={formData.language} 
+                        onChange={handleLanguageChange} 
+                        required 
+                        style={{ width: '100%', height: '100px', padding: '5px' }}
+                    >
+                        {languages.map(lang => (
+                            <option key={lang.code} value={lang.code}>{lang.name}</option>
+                        ))}
+                    </select>
+                    <small style={{display: 'block', marginTop: '5px', color: '#666'}}>Hold Ctrl/Cmd to select multiple languages</small>
                 </div>
                 
                 {/* disable button while loading */}
