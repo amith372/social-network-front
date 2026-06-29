@@ -12,12 +12,12 @@ export default function Home() {
     const [selectedGroup, setSelectedGroup] = useState(PUBLIC_GROUP); // Default to public feed
 
     return (
-        
+
         <div style={styles.container}>
-            
+
             {/* private chats column */}
             <div style={styles.leftColumn}>
-                <ChatSidebar />
+                <ChatSidebar selectedGroup={selectedGroup} setSelectedGroup={setSelectedGroup} />
             </div>
 
             {/* feed column*/}
@@ -39,11 +39,11 @@ const styles = {
     container: {
         display: 'grid',
         // split the screen into 3 columns: left (1fr), center (2fr), right (1fr)
-        gridTemplateColumns: '1fr 2fr 1fr', 
-        gap: '20px', 
+        gridTemplateColumns: '1fr 2fr 1fr',
+        gap: '20px',
         padding: '20px',
-        maxWidth: '1400px', 
-        margin: '0 auto', 
+        maxWidth: '1400px',
+        margin: '0 auto',
         height: 'calc(100vh - 80px)'
     },
     leftColumn: {
@@ -52,7 +52,7 @@ const styles = {
         padding: '10px'
     },
     centerColumn: {
-        
+
         display: 'flex',
         flexDirection: 'column',
         gap: '15px'
