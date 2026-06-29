@@ -49,7 +49,10 @@ const styles = {
     leftColumn: {
         border: '2px solid black',
         borderRadius: '8px',
-        padding: '10px'
+        padding: '10px',
+        display: 'flex',
+        flexDirection: 'column',
+        maxHeight: 'calc(100vh - 120px)'
     },
     centerColumn: {
 
@@ -60,6 +63,9 @@ const styles = {
     rightColumn: {
         border: '2px solid black',
         borderRadius: '8px',
-        padding: '10px'
+        padding: '10px',
+        display: 'flex',
+        flexDirection: 'column',
+        maxHeight: 'calc(100vh - 120px)'
     }
 };
