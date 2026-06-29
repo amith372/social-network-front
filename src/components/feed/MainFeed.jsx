@@ -3,6 +3,8 @@ import axios from 'axios';
 import CreatePost from './CreatePost';
 import PostItem from './PostItem';
 
+import { io } from 'socket.io-client';
+
 // 1. מקבלים את selectedGroupId כ-Prop במקום להגדיר אותו כקבוע
 export default function MainFeed({ selectedGroup }) {
     const [posts, setPosts] = useState([]);
@@ -38,6 +40,25 @@ export default function MainFeed({ selectedGroup }) {
     // React יריץ את fetchPosts מחדש בכל פעם שהמשתמש יחליף קבוצה!
     useEffect(() => {
         fetchPosts();
+
+        const socket = io('https://social-network-backend-android2-project.onrender.com');
+
+        socket.emit('join room', selectedGroup._id);
+
+        socket.on('new_post', (newPost) => {
+            setPosts((prevPosts) => {
+                // Prevent duplicate posts if this user was the author and we already appended it locally
+                if (prevPosts.find(p => p._id === newPost._id)) {
+                    return prevPosts;
+                }
+                return [newPost, ...prevPosts];
+            });
+        });
+
+        return () => {
+            socket.emit('leave room', selectedGroup._id);
+            socket.disconnect();
+        };
     }, [selectedGroup._id]); 
 
     const handlePublishPost = async (newContent) => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { io } from 'socket.io-client';
 
 // 1. מקבלים את selectedGroup ו-setSelectedGroup
 export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
@@ -46,6 +47,35 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
             }
         };
         fetchData();
+
+        const socket = io('https://social-network-backend-android2-project.onrender.com');
+        socket.on('new_group', (newGroup) => {
+            if (newGroup.isGroupChat === true) {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        const myUserId = payload.id;
+                        
+                        // Check if we are a member of this new group
+                        const isMember = newGroup.members.some(m => 
+                            (typeof m === 'object' ? m._id : m) === myUserId
+                        );
+
+                        if (isMember) {
+                            setGroups(prev => {
+                                if (prev.find(g => g._id === newGroup._id)) return prev;
+                                return [...prev, newGroup];
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Error decoding token for socket", e);
+                    }
+                }
+            }
+        });
+
+        return () => socket.disconnect();
     }, []);
 
     const handleUserCheckboxChange = (userId) => {

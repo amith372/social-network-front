@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { io } from 'socket.io-client';
 
 export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
     const [privateChats, setPrivateChats] = useState([]);
@@ -65,6 +66,53 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
             }
         };
         fetchPrivateChats();
+
+        const socket = io('https://social-network-backend-android2-project.onrender.com');
+        socket.on('new_group', (newGroup) => {
+            if (newGroup.isGroupChat === false) {
+                const token = localStorage.getItem('token');
+                const currentUsername = localStorage.getItem('username');
+                
+                if (token && currentUsername) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        const myUserId = payload.id;
+                        
+                        const isMember = newGroup.members.some(m => 
+                            (typeof m === 'object' ? m._id : m) === myUserId
+                        );
+
+                        if (isMember) {
+                            setPrivateChats(prev => {
+                                if (prev.find(c => c._id === newGroup._id)) return prev;
+
+                                // Format the chat name properly
+                                let chatName = "Private Chat";
+                                if (newGroup.members && newGroup.members.length > 0) {
+                                    const otherUsernames = [];
+                                    newGroup.members.forEach(mId => {
+                                        const mUsername = typeof mId === 'object' ? mId.username : null;
+                                        if (mUsername && mUsername !== currentUsername) {
+                                            otherUsernames.push(mUsername);
+                                        }
+                                    });
+                                    if (otherUsernames.length > 0) {
+                                        chatName = otherUsernames.join(', ');
+                                    }
+                                }
+
+                                const chatToAdd = { ...newGroup, name: chatName };
+                                return [...prev, chatToAdd];
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Error decoding token for socket", e);
+                    }
+                }
+            }
+        });
+
+        return () => socket.disconnect();
     }, []);
 
     const handleStartPrivateChat = async (e) => {
