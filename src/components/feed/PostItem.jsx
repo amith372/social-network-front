@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 
-export default function PostItem({ post }) {
+export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, onPostDelete }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editContent, setEditContent] = useState(post.content);
+
+    const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/posts';
 
     const formatTimestamp = (dateString) => {
         if (!dateString) return '';
@@ -13,18 +18,70 @@ export default function PostItem({ post }) {
         return `${hours}:${minutes} ${day}.${month}.${year}`;
     };
 
+    const handleSave = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.put(`${API_URL}/${post._id}`, { content: editContent }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            onPostUpdate(res.data);
+            setIsEditing(false);
+        } catch (err) {
+            console.error("Failed to update post", err);
+            alert("Failed to update post");
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!window.confirm("Are you sure you want to delete this post?")) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`${API_URL}/${post._id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            onPostDelete(post._id);
+        } catch (err) {
+            console.error("Failed to delete post", err);
+            alert("Failed to delete post");
+        }
+    };
+
     const authorName = post.author?.username || 'Unknown User';
+    const authorId = post.author?._id || post.author;
+    const canEdit = isAdmin || authorId === currentUserId;
+
     return (
         <div style={styles.card}>
-            {/* תוכן הפוסט */}
-            <p style={styles.content}>{post.content}</p>
+            {isEditing ? (
+                <div>
+                    <textarea 
+                        value={editContent} 
+                        onChange={(e) => setEditContent(e.target.value)} 
+                        style={{ width: '100%', minHeight: '60px', padding: '5px' }}
+                    />
+                    <div style={{ marginTop: '5px', display: 'flex', gap: '5px' }}>
+                        <button onClick={handleSave} style={{ backgroundColor: '#28a745', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>Save</button>
+                        <button onClick={() => setIsEditing(false)} style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer' }}>Cancel</button>
+                    </div>
+                </div>
+            ) : (
+                <p style={styles.content}>{post.content}</p>
+            )}
 
-            {/* פרטי הכותב */}
             <div style={styles.footer}>
                 <small style={styles.author}>Posted by: {authorName}</small>
-                {post.createdAt && (
-                    <small style={styles.timestamp}>{formatTimestamp(post.createdAt)}</small>
-                )}
+                
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {canEdit && !isEditing && (
+                        <div style={{ display: 'flex', gap: '5px' }}>
+                            <button onClick={() => setIsEditing(true)} style={styles.actionBtn}>Edit</button>
+                            <button onClick={handleDelete} style={{ ...styles.actionBtn, color: '#dc3545' }}>Delete</button>
+                        </div>
+                    )}
+                    {post.createdAt && (
+                        <small style={styles.timestamp}>{formatTimestamp(post.createdAt)}</small>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -57,5 +114,13 @@ const styles = {
     timestamp: {
         fontSize: '11px',
         color: '#999'
+    },
+    actionBtn: {
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        padding: '2px 8px',
+        cursor: 'pointer',
+        fontSize: '12px'
     }
 };
