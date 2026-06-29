@@ -16,6 +16,7 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
     // Search states
     const [searchBy, setSearchBy] = useState('username');
     const [searchValue, setSearchValue] = useState('');
+    const [languages, setLanguages] = useState([]);
 
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/groups';
     const USERS_API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users';
@@ -27,13 +28,17 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                 const headers = { Authorization: `Bearer ${token}` };
 
                 // Fetch all groups user is part of, AND fetch all users
-                const [groupsRes, usersRes] = await Promise.all([
+                const [groupsRes, usersRes, langRes] = await Promise.all([
                     axios.get(`${API_URL}?myGroups=true`, { headers }),
-                    axios.get(USERS_API_URL, { headers })
+                    axios.get(USERS_API_URL, { headers }),
+                    axios.get('https://libretranslate.com/languages').catch(() => ({ data: [] }))
                 ]);
 
                 const fetchedUsers = usersRes.data;
                 setAllUsers(fetchedUsers);
+                if (langRes && langRes.data) {
+                    setLanguages(langRes.data);
+                }
 
                 // Filter groups to ONLY those where isGroupChat is false
                 const pChats = groupsRes.data.filter(g => g.isGroupChat === false);
@@ -234,13 +239,47 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                                 <option value="language">Language</option>
                                 <option value="gender">Gender</option>
                             </select>
-                            <input
-                                type="text"
-                                value={searchValue}
-                                onChange={(e) => setSearchValue(e.target.value)}
-                                placeholder={`Search by ${searchBy}...`}
-                                style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
-                            />
+                            {searchBy === 'gender' ? (
+                                <select 
+                                    value={searchValue} 
+                                    onChange={(e) => setSearchValue(e.target.value)}
+                                    style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
+                                >
+                                    <option value="">Any</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                    <option value="Prefer not to say">Prefer not to say</option>
+                                </select>
+                            ) : searchBy === 'age' ? (
+                                <input 
+                                    type="number" 
+                                    min="0"
+                                    value={searchValue} 
+                                    onChange={(e) => setSearchValue(e.target.value)} 
+                                    placeholder="Age..." 
+                                    style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
+                                />
+                            ) : searchBy === 'language' ? (
+                                <select
+                                    value={searchValue}
+                                    onChange={(e) => setSearchValue(e.target.value)}
+                                    style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
+                                >
+                                    <option value="">Any</option>
+                                    {languages.map(lang => (
+                                        <option key={lang.code} value={lang.code}>{lang.name}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <input
+                                    type="text"
+                                    value={searchValue}
+                                    onChange={(e) => setSearchValue(e.target.value)}
+                                    placeholder={`Search by ${searchBy}...`}
+                                    style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
+                                />
+                            )}
                         </div>
 
                         <select
@@ -273,12 +312,12 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                                             if (!u.age || u.age.toString() !== searchLower) return false;
                                         } else if (searchBy === 'language') {
                                             if (Array.isArray(u.language)) {
-                                                if (!u.language.some(lang => lang.toLowerCase().includes(searchLower))) return false;
+                                                if (!u.language.some(lang => lang.toLowerCase() === searchLower)) return false;
                                             } else {
-                                                if (!u.language || !u.language.toLowerCase().includes(searchLower)) return false;
+                                                if (!u.language || u.language.toLowerCase() !== searchLower) return false;
                                             }
                                         } else if (searchBy === 'gender') {
-                                            if (!u.gender || !u.gender.toLowerCase().includes(searchLower)) return false;
+                                            if (!u.gender || u.gender.toLowerCase() !== searchLower) return false;
                                         }
                                     }
 
