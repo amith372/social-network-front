@@ -14,7 +14,7 @@ export default function Register({ onLoginSuccess }) {
     const [errorMsg, setErrorMsg] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [languages, setLanguages] = useState([]);
-    
+
     const navigate = useNavigate();
 
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users/register';
@@ -31,7 +31,6 @@ export default function Register({ onLoginSuccess }) {
         fetchLanguages();
     }, []);
 
-    const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users/register';
 
     const handleChange = (e) => {
         setFormData({
@@ -49,7 +48,7 @@ export default function Register({ onLoginSuccess }) {
     };
 
     const handleRegister = async (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
         setErrorMsg('');
         setIsLoading(true); // set to loading state when the request starts
 
@@ -59,12 +58,12 @@ export default function Register({ onLoginSuccess }) {
 
             /// saving the token to local storage for future authenticated requests
             localStorage.setItem('token', response.data.token);
-            
+
             // update app state to reflect that the user is now logged in
             onLoginSuccess(formData.username);
-            
+
             navigate('/');
-            
+
         } catch (error) {
             console.error("Full Error Object:", error);
 
@@ -80,70 +79,70 @@ export default function Register({ onLoginSuccess }) {
                 setErrorMsg("A general system error occurred.");
             }
         } finally {
-            setIsLoading(false); 
+            setIsLoading(false);
         }
     };
 
     return (
         <div style={{ padding: '20px', textAlign: 'center' }}>
             <h2>Create an Account</h2>
-            
+
             {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
 
             <form onSubmit={handleRegister} style={{ display: 'inline-block', textAlign: 'left' }}>
                 <div style={{ marginBottom: '10px' }}>
                     <label htmlFor="username">Username: </label><br />
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         id="username"
-                        name="username" 
-                        value={formData.username} 
-                        onChange={handleChange} 
-                        required 
+                        name="username"
+                        value={formData.username}
+                        onChange={handleChange}
+                        required
                     />
                 </div>
                 <div style={{ marginBottom: '10px' }}>
                     <label htmlFor="email">Email: </label><br />
-                    <input 
-                        type="email" 
+                    <input
+                        type="email"
                         id="email"
-                        name="email" 
-                        value={formData.email} 
-                        onChange={handleChange} 
-                        required 
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
                     />
                 </div>
                 <div style={{ marginBottom: '15px' }}>
                     <label htmlFor="password">Password: </label><br />
-                    <input 
-                        type="password" 
+                    <input
+                        type="password"
                         id="password"
-                        name="password" 
-                        value={formData.password} 
-                        onChange={handleChange} 
-                        required 
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
                     />
                 </div>
                 <div style={{ marginBottom: '10px' }}>
                     <label htmlFor="age">Age: </label><br />
-                    <input 
-                        type="number" 
+                    <input
+                        type="number"
                         id="age"
-                        name="age" 
-                        value={formData.age} 
-                        onChange={handleChange} 
-                        required 
+                        name="age"
+                        value={formData.age}
+                        onChange={handleChange}
+                        required
                         min="0"
                     />
                 </div>
                 <div style={{ marginBottom: '10px' }}>
                     <label htmlFor="gender">Gender: </label><br />
-                    <select 
+                    <select
                         id="gender"
-                        name="gender" 
-                        value={formData.gender} 
-                        onChange={handleChange} 
-                        required 
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleChange}
+                        required
                         style={{ width: '100%', padding: '5px' }}
                     >
                         <option value="Male">Male</option>
@@ -154,34 +153,34 @@ export default function Register({ onLoginSuccess }) {
                 </div>
                 <div style={{ marginBottom: '15px' }}>
                     <label htmlFor="language">Languages: </label><br />
-                    <select 
+                    <select
                         multiple
                         id="language"
-                        name="language" 
-                        value={formData.language} 
-                        onChange={handleLanguageChange} 
-                        required 
+                        name="language"
+                        value={formData.language}
+                        onChange={handleLanguageChange}
+                        required
                         style={{ width: '100%', height: '100px', padding: '5px' }}
                     >
                         {languages.map(lang => (
                             <option key={lang.code} value={lang.code}>{lang.name}</option>
                         ))}
                     </select>
-                    <small style={{display: 'block', marginTop: '5px', color: '#666'}}>Hold Ctrl/Cmd to select multiple languages</small>
+                    <small style={{ display: 'block', marginTop: '5px', color: '#666' }}>Hold Ctrl/Cmd to select multiple languages</small>
                 </div>
-                
+
                 {/* disable button while loading */}
-                <button 
-                    type="submit" 
+                <button
+                    type="submit"
                     disabled={isLoading}
-                    style={{ 
-                        width: '100%', 
-                        padding: '5px', 
-                        backgroundColor: isLoading ? '#6c757d' : '#28a745', 
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: '4px', 
-                        cursor: isLoading ? 'not-allowed' : 'pointer' 
+                    style={{
+                        width: '100%',
+                        padding: '5px',
+                        backgroundColor: isLoading ? '#6c757d' : '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: isLoading ? 'not-allowed' : 'pointer'
                     }}
                 >
                     {isLoading ? 'Registering...' : 'Register'}
