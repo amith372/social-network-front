@@ -13,6 +13,10 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
     const [selectedUser, setSelectedUser] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Search states
+    const [searchBy, setSearchBy] = useState('username');
+    const [searchValue, setSearchValue] = useState('');
+
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/groups';
     const USERS_API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users';
 
@@ -72,13 +76,13 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
             if (newGroup.isGroupChat === false) {
                 const token = localStorage.getItem('token');
                 const currentUsername = localStorage.getItem('username');
-                
+
                 if (token && currentUsername) {
                     try {
                         const payload = JSON.parse(atob(token.split('.')[1]));
                         const myUserId = payload.id;
-                        
-                        const isMember = newGroup.members.some(m => 
+
+                        const isMember = newGroup.members.some(m =>
                             (typeof m === 'object' ? m._id : m) === myUserId
                         );
 
@@ -217,7 +221,28 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
             <div style={styles.footerRow}>
                 {isCreating ? (
                     <form onSubmit={handleStartPrivateChat} style={styles.createForm}>
-                        <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: '#555', textAlign: 'left' }}>Select a user:</p>
+                        <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: '#555', textAlign: 'left' }}>Search for user:</p>
+
+                        <div style={{ display: 'flex', gap: '5px', marginBottom: '5px' }}>
+                            <select
+                                value={searchBy}
+                                onChange={(e) => setSearchBy(e.target.value)}
+                                style={{ ...styles.createInput, flex: 1, padding: '4px', fontSize: '12px' }}
+                            >
+                                <option value="username">Username</option>
+                                <option value="age">Age</option>
+                                <option value="language">Language</option>
+                                <option value="gender">Gender</option>
+                            </select>
+                            <input
+                                type="text"
+                                value={searchValue}
+                                onChange={(e) => setSearchValue(e.target.value)}
+                                placeholder={`Search by ${searchBy}...`}
+                                style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
+                            />
+                        </div>
+
                         <select
                             value={selectedUser}
                             onChange={(e) => setSelectedUser(e.target.value)}
@@ -226,7 +251,39 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                         >
                             <option value="" disabled>Select a user...</option>
                             {allUsers
-                                .filter(u => u.username !== currentUsername)
+                                .filter(u => {
+                                    // 1. Exclude self
+                                    if (u.username === currentUsername) return false;
+
+                                    // 2. Exclude users we already have a private chat with
+                                    const hasExistingChat = privateChats.some(chat =>
+                                        chat.members.some(m => {
+                                            const idStr = typeof m === 'object' ? m._id : m;
+                                            return idStr === u._id;
+                                        })
+                                    );
+                                    if (hasExistingChat) return false;
+
+                                    // 3. Apply search filter
+                                    if (searchValue.trim() !== '') {
+                                        const searchLower = searchValue.toLowerCase().trim();
+                                        if (searchBy === 'username') {
+                                            if (!u.username || !u.username.toLowerCase().includes(searchLower)) return false;
+                                        } else if (searchBy === 'age') {
+                                            if (!u.age || u.age.toString() !== searchLower) return false;
+                                        } else if (searchBy === 'language') {
+                                            if (Array.isArray(u.language)) {
+                                                if (!u.language.some(lang => lang.toLowerCase().includes(searchLower))) return false;
+                                            } else {
+                                                if (!u.language || !u.language.toLowerCase().includes(searchLower)) return false;
+                                            }
+                                        } else if (searchBy === 'gender') {
+                                            if (!u.gender || !u.gender.toLowerCase().includes(searchLower)) return false;
+                                        }
+                                    }
+
+                                    return true;
+                                })
                                 .map(user => (
                                     <option key={user._id} value={user._id}>{user.username}</option>
                                 ))
@@ -237,7 +294,15 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                             <button type="submit" disabled={isSubmitting} style={styles.submitBtn}>
                                 {isSubmitting ? '⏳' : 'Start'}
                             </button>
-                            <button type="button" onClick={() => { setIsCreating(false); setSelectedUser(''); }} style={styles.cancelBtn}>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsCreating(false);
+                                    setSelectedUser('');
+                                    setSearchValue(''); // reset search on close
+                                }}
+                                style={styles.cancelBtn}
+                            >
                                 Cancel
                             </button>
                         </div>
