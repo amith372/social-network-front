@@ -23,6 +23,19 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/groups';
     const USERS_API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users';
 
+    const getChatDisplayName = (chat, fetchedUsers, currentUsername) => {
+        const memberIds = (chat?.members || []).map(m => typeof m === 'object' ? m._id : m);
+
+        for (const id of memberIds) {
+            const user = fetchedUsers.find(u => u._id === id);
+            if (user && user.username && user.username !== currentUsername) {
+                return user.username;
+            }
+        }
+
+        return 'Deleted Chat';
+    };
+
     useEffect(() => {
         const fetchPrivateChats = async () => {
             try {
@@ -48,25 +61,10 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                 const currentUsername = localStorage.getItem('username');
 
                 // Map members array to actual usernames
-                const processedChats = pChats.map(chat => {
-                    let chatName = "Private Chat";
-                    if (chat.members && chat.members.length > 0) {
-                        const otherUsernames = [];
-                        chat.members.forEach(mId => {
-                            const idStr = typeof mId === 'object' ? mId._id : mId;
-                            const u = fetchedUsers.find(user => user._id === idStr);
-                            if (u && u.username !== currentUsername) {
-                                otherUsernames.push(u.username);
-                            }
-                        });
-
-                        if (otherUsernames.length > 0) {
-                            chatName = otherUsernames.join(', ');
-                        }
-                    }
-
-                    return { ...chat, name: chatName }; // Override name so MainFeed displays the user's name
-                });
+                const processedChats = pChats.map(chat => ({
+                    ...chat,
+                    name: getChatDisplayName(chat, fetchedUsers, currentUsername)
+                }));
 
                 setPrivateChats(processedChats);
             } catch (err) {
@@ -97,22 +95,10 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                             setPrivateChats(prev => {
                                 if (prev.find(c => c._id === newGroup._id)) return prev;
 
-                                // Format the chat name properly
-                                let chatName = "Private Chat";
-                                if (newGroup.members && newGroup.members.length > 0) {
-                                    const otherUsernames = [];
-                                    newGroup.members.forEach(mId => {
-                                        const mUsername = typeof mId === 'object' ? mId.username : null;
-                                        if (mUsername && mUsername !== currentUsername) {
-                                            otherUsernames.push(mUsername);
-                                        }
-                                    });
-                                    if (otherUsernames.length > 0) {
-                                        chatName = otherUsernames.join(', ');
-                                    }
-                                }
-
-                                const chatToAdd = { ...newGroup, name: chatName };
+                                const chatToAdd = {
+                                    ...newGroup,
+                                    name: getChatDisplayName(newGroup, [], currentUsername)
+                                };
                                 return [...prev, chatToAdd];
                             });
                         }
@@ -141,24 +127,7 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
             const newChat = res.data;
             const currentUsername = localStorage.getItem('username');
 
-            let chatName = "Private Chat";
-            if (newChat.members && newChat.members.length > 0) {
-                const otherUsernames = [];
-                newChat.members.forEach(mId => {
-                    const idStr = typeof mId === 'object' ? mId._id : mId;
-                    const u = allUsers.find(user => user._id === idStr);
-                    if (mId.username && mId.username !== currentUsername) {
-                        otherUsernames.push(mId.username);
-                    } else if (u && u.username !== currentUsername) {
-                        otherUsernames.push(u.username);
-                    }
-                });
-                if (otherUsernames.length > 0) {
-                    chatName = otherUsernames.join(', ');
-                }
-            }
-
-            newChat.name = chatName;
+            newChat.name = getChatDisplayName(newChat, allUsers, currentUsername);
 
             // Add to list if not already there
             setPrivateChats(prev => {

@@ -89,11 +89,20 @@ export default function Navbar({ isLoggedIn, username, onLogout, onUpdateUsernam
                 headers: { Authorization: `Bearer ${token}` },
                 data: deleteData // Axios delete expects body in `data` field
             });
+
             setMsg({ text: res.data.message || 'Account deleted!', type: 'success' });
+
+            if (typeof onLogout === 'function') {
+                onLogout();
+            } else {
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+            }
+
             setTimeout(() => {
                 setActiveModal(null);
-                handleLogoutClick();
-            }, 1500);
+                navigate('/login');
+            }, 1000);
         } catch (err) {
             setMsg({ text: err.response?.data?.message || 'Error deleting account', type: 'error' });
         }

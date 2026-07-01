@@ -37,8 +37,8 @@ export default function Login({ onLoginSuccess }) {
             localStorage.setItem('token', response.data.token);
             const fetchedUsername = response.data.user.username || "User";
             
-            onLoginSuccess(fetchedUsername);
-            navigate('/');
+            onLoginSuccess(fetchedUsername, response.data.token);
+            navigate('/', { replace: true });
             
         } catch (error) {
             console.error("Full Error Object:", error);

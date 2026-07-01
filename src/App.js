@@ -51,7 +51,10 @@ function App() {
         };
     }, []);*/
 
-    const handleLoginSuccess = (loggedInUsername) => {
+    const handleLoginSuccess = (loggedInUsername, token) => {
+        if (token) {
+            localStorage.setItem('token', token);
+        }
         localStorage.setItem('username', loggedInUsername);
         setUsername(loggedInUsername);
         setIsLoggedIn(true);
@@ -76,8 +79,8 @@ function App() {
 
             <div style={{ marginTop: '20px' }}>
                 <Routes>
-                    <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
-                    <Route path="/register" element={<Register onLoginSuccess={handleLoginSuccess} />} />
+                    <Route path="/login" element={isLoggedIn ? <Navigate to="/" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} />
+                    <Route path="/register" element={isLoggedIn ? <Navigate to="/" replace /> : <Register onLoginSuccess={handleLoginSuccess} />} />
                     <Route path="/" element={isLoggedIn ? <Home /> : <Navigate to="/login" replace />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
