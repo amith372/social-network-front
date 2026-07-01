@@ -103,7 +103,10 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
             );
 
             const newGroup = response.data;
-            setGroups((prev) => [...prev, newGroup]);
+            setGroups((prev) => {
+                if (prev.find(g => g._id === newGroup._id)) return prev;
+                return [...prev, newGroup];
+            });
 
             // 2. מעבירים את אובייקט הקבוצה החדש בשלמותו!
             setSelectedGroup(newGroup);
