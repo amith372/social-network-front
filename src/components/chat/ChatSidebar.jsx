@@ -193,34 +193,32 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
 
     return (
         <div style={styles.sidebarContainer}>
-            <div>
-                <div style={styles.header}>
-                    private chats
-                </div>
+            <div style={styles.header}>
+                private chats
+            </div>
 
-                <div style={styles.innerListBox}>
-                    {errorMsg && <p style={{ color: 'red', fontSize: '14px' }}>{errorMsg}</p>}
+            <div style={styles.innerListBox}>
+                {errorMsg && <p style={{ color: 'red', fontSize: '14px' }}>{errorMsg}</p>}
 
-                    {isLoading ? (
-                        <p style={{ color: '#777' }}>Loading...</p>
-                    ) : privateChats.length === 0 ? (
-                        <p style={{ color: '#777', fontSize: '14px' }}>No private chats yet.</p>
-                    ) : (
-                        privateChats.map(chat => (
-                            <div
-                                key={chat._id}
-                                onClick={() => setSelectedGroup(chat)}
-                                style={{
-                                    ...styles.chatItem,
-                                    fontWeight: selectedGroup && selectedGroup._id === chat._id ? 'bold' : 'normal',
-                                    backgroundColor: selectedGroup && selectedGroup._id === chat._id ? '#e6f7ff' : 'transparent'
-                                }}
-                            >
-                                💬 {chat.name}
-                            </div>
-                        ))
-                    )}
-                </div>
+                {isLoading ? (
+                    <p style={{ color: '#777' }}>Loading...</p>
+                ) : privateChats.length === 0 ? (
+                    <p style={{ color: '#777', fontSize: '14px' }}>No private chats yet.</p>
+                ) : (
+                    privateChats.map(chat => (
+                        <div
+                            key={chat._id}
+                            onClick={() => setSelectedGroup(chat)}
+                            style={{
+                                ...styles.chatItem,
+                                fontWeight: selectedGroup && selectedGroup._id === chat._id ? 'bold' : 'normal',
+                                backgroundColor: selectedGroup && selectedGroup._id === chat._id ? '#e6f7ff' : 'transparent'
+                            }}
+                        >
+                            💬 {chat.name}
+                        </div>
+                    ))
+                )}
             </div>
 
             <div style={styles.footerRow}>
@@ -240,8 +238,8 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                                 <option value="gender">Gender</option>
                             </select>
                             {searchBy === 'gender' ? (
-                                <select 
-                                    value={searchValue} 
+                                <select
+                                    value={searchValue}
                                     onChange={(e) => setSearchValue(e.target.value)}
                                     style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
                                 >
@@ -252,12 +250,12 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                                     <option value="Prefer not to say">Prefer not to say</option>
                                 </select>
                             ) : searchBy === 'age' ? (
-                                <input 
-                                    type="number" 
+                                <input
+                                    type="number"
                                     min="0"
-                                    value={searchValue} 
-                                    onChange={(e) => setSearchValue(e.target.value)} 
-                                    placeholder="Age..." 
+                                    value={searchValue}
+                                    onChange={(e) => setSearchValue(e.target.value)}
+                                    placeholder="Age..."
                                     style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
                                 />
                             ) : searchBy === 'language' ? (

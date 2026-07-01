@@ -7,7 +7,7 @@ export default function Register({ onLoginSuccess }) {
         username: '',
         email: '',
         password: '',
-        age: '',
+        dateOfBirth: '',
         gender: 'Prefer not to say',
         language: []
     });
@@ -124,15 +124,15 @@ export default function Register({ onLoginSuccess }) {
                     />
                 </div>
                 <div style={{ marginBottom: '10px' }}>
-                    <label htmlFor="age">Age: </label><br />
+                    <label htmlFor="dateOfBirth">Birth Date: </label><br />
                     <input
-                        type="number"
-                        id="age"
-                        name="age"
-                        value={formData.age}
+                        type="date"
+                        id="dateOfBirth"
+                        name="dateOfBirth"
+                        value={formData.dateOfBirth}
                         onChange={handleChange}
                         required
-                        min="0"
+                        max={new Date().toISOString().split('T')[0]}
                     />
                 </div>
                 <div style={{ marginBottom: '10px' }}>

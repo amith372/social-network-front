@@ -5,13 +5,13 @@ export default function CreatePost({ onPublish }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         // מונע שליחת פוסט ריק
         if (!postContent.trim()) return;
 
         // מפעיל את הפונקציה שנקבל מההורה (MainFeed)
         onPublish(postContent);
-        
+
         // מנקה את תיבת הטקסט אחרי הפרסום
         setPostContent('');
     };
@@ -19,9 +19,9 @@ export default function CreatePost({ onPublish }) {
     return (
         <div style={styles.container}>
             <form onSubmit={handleSubmit}>
-                <textarea 
+                <textarea
                     style={styles.textarea}
-                    placeholder="Share something with everyone..."
+                    placeholder="Share post..."
                     value={postContent}
                     onChange={(e) => setPostContent(e.target.value)}
                     rows="3"

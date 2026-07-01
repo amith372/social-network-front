@@ -7,12 +7,12 @@ export default function Navbar({ isLoggedIn, username, onLogout, onUpdateUsernam
 
     const [activeModal, setActiveModal] = useState(null); // 'updateProfile', 'changePassword', 'deleteAccount'
     const [languages, setLanguages] = useState([]);
-    
+
     // Forms state
-    const [profileData, setProfileData] = useState({ username: '', age: '', gender: 'Prefer not to say', spokenLanguages: [] });
+    const [profileData, setProfileData] = useState({ username: '', gender: 'Prefer not to say', spokenLanguages: [] });
     const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '' });
     const [deleteData, setDeleteData] = useState({ password: '' });
-    
+
     const [msg, setMsg] = useState({ text: '', type: '' }); // type: 'error' or 'success'
 
     const USERS_API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users';
@@ -34,7 +34,7 @@ export default function Navbar({ isLoggedIn, username, onLogout, onUpdateUsernam
     }, [activeModal]);
 
     const handleLogoutClick = () => {
-        onLogout(); 
+        onLogout();
         navigate('/login');
     };
 
@@ -45,7 +45,6 @@ export default function Navbar({ isLoggedIn, username, onLogout, onUpdateUsernam
             const token = localStorage.getItem('token');
             const dataToUpdate = {};
             if (profileData.username.trim()) dataToUpdate.username = profileData.username;
-            if (profileData.age) dataToUpdate.age = profileData.age;
             if (profileData.gender) dataToUpdate.gender = profileData.gender;
             if (profileData.spokenLanguages.length > 0) dataToUpdate.spokenLanguages = profileData.spokenLanguages;
 
@@ -116,12 +115,12 @@ export default function Navbar({ isLoggedIn, username, onLogout, onUpdateUsernam
                 <h3 style={{ margin: 0 }}>
                     <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>Social Network</Link>
                 </h3>
-                
+
                 <div>
                     {isLoggedIn ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <span style={{ color: '#fff', fontWeight: 'bold' }}>
-                                    Welcome, {username}!
+                                Welcome, {username}!
                             </span>
                             <button onClick={() => setActiveModal('updateProfile')} style={{ backgroundColor: '#17a2b8', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
                                 Update Profile
@@ -152,24 +151,20 @@ export default function Navbar({ isLoggedIn, username, onLogout, onUpdateUsernam
                         <h4>Update Profile</h4>
                         {msg.text && <p style={{ color: msg.type === 'error' ? 'red' : 'green', fontSize: '13px' }}>{msg.text}</p>}
                         <form onSubmit={handleProfileSubmit}>
-                            <label style={{fontSize: '13px'}}>Username (leave blank to keep):</label>
-                            <input type="text" style={inputStyle} value={profileData.username} onChange={e => setProfileData({...profileData, username: e.target.value})} />
-                            
-                            <label style={{fontSize: '13px'}}>Age:</label>
-                            <input type="number" style={inputStyle} value={profileData.age} onChange={e => setProfileData({...profileData, age: e.target.value})} />
-                            
-                            <label style={{fontSize: '13px'}}>Gender:</label>
-                            <select style={inputStyle} value={profileData.gender} onChange={e => setProfileData({...profileData, gender: e.target.value})}>
+                            <label style={{ fontSize: '13px' }}>Username (leave blank to keep):</label>
+                            <input type="text" style={inputStyle} value={profileData.username} onChange={e => setProfileData({ ...profileData, username: e.target.value })} />
+                            <label style={{ fontSize: '13px' }}>Gender:</label>
+                            <select style={inputStyle} value={profileData.gender} onChange={e => setProfileData({ ...profileData, gender: e.target.value })}>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                                 <option value="Other">Other</option>
                                 <option value="Prefer not to say">Prefer not to say</option>
                             </select>
 
-                            <label style={{fontSize: '13px'}}>Languages:</label>
-                            <select multiple style={{...inputStyle, height: '80px'}} value={profileData.spokenLanguages} onChange={e => {
+                            <label style={{ fontSize: '13px' }}>Languages:</label>
+                            <select multiple style={{ ...inputStyle, height: '80px' }} value={profileData.spokenLanguages} onChange={e => {
                                 const selected = Array.from(e.target.selectedOptions, opt => opt.value);
-                                setProfileData({...profileData, spokenLanguages: selected});
+                                setProfileData({ ...profileData, spokenLanguages: selected });
                             }}>
                                 {languages.map(lang => (
                                     <option key={lang.code} value={lang.code}>{lang.name}</option>
@@ -178,7 +173,7 @@ export default function Navbar({ isLoggedIn, username, onLogout, onUpdateUsernam
 
                             <div style={{ display: 'flex', gap: '5px' }}>
                                 <button type="submit" style={btnStyle}>Save</button>
-                                <button type="button" onClick={() => setActiveModal(null)} style={{...btnStyle, backgroundColor: '#6c757d'}}>Cancel</button>
+                                <button type="button" onClick={() => setActiveModal(null)} style={{ ...btnStyle, backgroundColor: '#6c757d' }}>Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -191,15 +186,15 @@ export default function Navbar({ isLoggedIn, username, onLogout, onUpdateUsernam
                         <h4>Change Password</h4>
                         {msg.text && <p style={{ color: msg.type === 'error' ? 'red' : 'green', fontSize: '13px' }}>{msg.text}</p>}
                         <form onSubmit={handlePasswordSubmit}>
-                            <label style={{fontSize: '13px'}}>Current Password:</label>
-                            <input type="password" style={inputStyle} value={passwordData.currentPassword} onChange={e => setPasswordData({...passwordData, currentPassword: e.target.value})} required />
-                            
-                            <label style={{fontSize: '13px'}}>New Password:</label>
-                            <input type="password" style={inputStyle} value={passwordData.newPassword} onChange={e => setPasswordData({...passwordData, newPassword: e.target.value})} required />
-                            
+                            <label style={{ fontSize: '13px' }}>Current Password:</label>
+                            <input type="password" style={inputStyle} value={passwordData.currentPassword} onChange={e => setPasswordData({ ...passwordData, currentPassword: e.target.value })} required />
+
+                            <label style={{ fontSize: '13px' }}>New Password:</label>
+                            <input type="password" style={inputStyle} value={passwordData.newPassword} onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })} required />
+
                             <div style={{ display: 'flex', gap: '5px' }}>
                                 <button type="submit" style={btnStyle}>Update</button>
-                                <button type="button" onClick={() => setActiveModal(null)} style={{...btnStyle, backgroundColor: '#6c757d'}}>Cancel</button>
+                                <button type="button" onClick={() => setActiveModal(null)} style={{ ...btnStyle, backgroundColor: '#6c757d' }}>Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -213,12 +208,12 @@ export default function Navbar({ isLoggedIn, username, onLogout, onUpdateUsernam
                         <p style={{ fontSize: '12px' }}>Warning: This action cannot be undone.</p>
                         {msg.text && <p style={{ color: msg.type === 'error' ? 'red' : 'green', fontSize: '13px' }}>{msg.text}</p>}
                         <form onSubmit={handleDeleteSubmit}>
-                            <label style={{fontSize: '13px'}}>Confirm with Password:</label>
-                            <input type="password" style={inputStyle} value={deleteData.password} onChange={e => setDeleteData({...deleteData, password: e.target.value})} required />
-                            
+                            <label style={{ fontSize: '13px' }}>Confirm with Password:</label>
+                            <input type="password" style={inputStyle} value={deleteData.password} onChange={e => setDeleteData({ ...deleteData, password: e.target.value })} required />
+
                             <div style={{ display: 'flex', gap: '5px' }}>
-                                <button type="submit" style={{...btnStyle, backgroundColor: '#dc3545'}}>Delete</button>
-                                <button type="button" onClick={() => setActiveModal(null)} style={{...btnStyle, backgroundColor: '#6c757d'}}>Cancel</button>
+                                <button type="submit" style={{ ...btnStyle, backgroundColor: '#dc3545' }}>Delete</button>
+                                <button type="button" onClick={() => setActiveModal(null)} style={{ ...btnStyle, backgroundColor: '#6c757d' }}>Cancel</button>
                             </div>
                         </form>
                     </div>

@@ -12,7 +12,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
     const [isLoading, setIsLoading] = useState(true);
     const [errorMsg, setErrorMsg] = useState('');
     const [showMembers, setShowMembers] = useState(false);
-    
+
     // Parse currentUserId from token
     const token = localStorage.getItem('token');
     let currentUserId = null;
@@ -31,17 +31,17 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
     const fetchPosts = async () => {
         setIsLoading(true);
         setErrorMsg('');
-        
+
         try {
             const token = localStorage.getItem('token');
-            
+
             // 2. משתמשים ב-Prop הדינמי כדי למשוך את הפוסטים של הקבוצה הספציפית
             const response = await axios.get(`${API_URL}?group=${selectedGroup._id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             setPosts(response.data);
-            
+
         } catch (error) {
             console.error("Error fetching posts:", error);
             setErrorMsg(error.response?.data?.message || "Failed to fetch posts from server.");
@@ -74,18 +74,18 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             socket.emit('leave room', selectedGroup._id);
             socket.disconnect();
         };
-    }, [selectedGroup._id]); 
+    }, [selectedGroup._id]);
 
     const handlePublishPost = async (newContent) => {
         try {
             const token = localStorage.getItem('token');
-            
-            const response = await axios.post(API_URL, 
-                { 
+
+            const response = await axios.post(API_URL,
+                {
                     content: newContent,
                     // 4. משייך את הפוסט החדש לקבוצה שהמשתמש מסתכל עליה כרגע
-                    group: selectedGroup._id 
-                }, 
+                    group: selectedGroup._id
+                },
                 {
                     headers: { Authorization: `Bearer ${token}` }
                 }
@@ -93,7 +93,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
 
             const newlyCreatedPost = response.data;
             setPosts((prevPosts) => [newlyCreatedPost, ...prevPosts]);
-            
+
         } catch (error) {
             console.error("Error publishing post:", error);
             alert(error.response?.data?.message || "Failed to publish post. Please try again.");
@@ -113,10 +113,10 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             {/* Header section with title and optional Members button */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                 <h2 style={{ margin: 0 }}>
-                    {selectedGroup._id === "000000000000000000000000" ? "Main Feed (Public)" : "Group Feed - " + selectedGroup.name}
+                    {selectedGroup._id === "000000000000000000000000" ? "Main Feed (Public)" : selectedGroup.name}
                 </h2>
                 {selectedGroup._id !== "000000000000000000000000" && selectedGroup.isGroupChat && (
-                    <button 
+                    <button
                         onClick={() => setShowMembers(true)}
                         style={{ backgroundColor: '#17a2b8', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
                     >
@@ -124,11 +124,11 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
                     </button>
                 )}
             </div>
-            
+
             <CreatePost onPublish={handlePublishPost} />
-            
+
             {errorMsg && <p style={{ color: 'red', textAlign: 'center' }}>{errorMsg}</p>}
-            
+
             {isLoading ? (
                 <p style={{ textAlign: 'center' }}>Loading posts...</p>
             ) : posts.length === 0 ? (
@@ -136,9 +136,9 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '500px', overflowY: 'auto', paddingRight: '10px' }}>
                     {posts.map(post => (
-                        <PostItem 
-                            key={post._id} 
-                            post={post} 
+                        <PostItem
+                            key={post._id}
+                            post={post}
                             currentUserId={currentUserId}
                             isAdmin={isAdmin}
                             onPostUpdate={handlePostUpdate}
@@ -149,7 +149,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             )}
 
             {showMembers && (
-                <MemberListModal 
+                <MemberListModal
                     group={selectedGroup}
                     currentUserId={currentUserId}
                     isAdmin={isAdmin}
