@@ -75,6 +75,12 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
             }
         });
 
+        socket.on('update_group', (updatedGroup) => {
+            if (updatedGroup.isGroupChat === true) {
+                setGroups((prev) => prev.map(g => g._id === updatedGroup._id ? updatedGroup : g));
+            }
+        });
+
         return () => socket.disconnect();
     }, []);
 

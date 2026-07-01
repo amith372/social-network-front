@@ -48,7 +48,9 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
 
     const authorName = post.author?.username || 'Unknown User';
     const authorId = post.author?._id || post.author;
-    const canEdit = isAdmin || authorId === currentUserId;
+    const isAuthor = authorId === currentUserId;
+    const canDelete = isAdmin || isAuthor;
+    const canEdit = isAuthor;
 
     return (
         <div style={styles.card}>
@@ -72,10 +74,10 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
                 <small style={styles.author}>Posted by: {authorName}</small>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {canEdit && !isEditing && (
+                    {(canEdit || canDelete) && !isEditing && (
                         <div style={{ display: 'flex', gap: '5px' }}>
-                            <button onClick={() => setIsEditing(true)} style={styles.actionBtn}>Edit</button>
-                            <button onClick={handleDelete} style={{ ...styles.actionBtn, color: '#dc3545' }}>Delete</button>
+                            {canEdit && <button onClick={() => setIsEditing(true)} style={styles.actionBtn}>Edit</button>}
+                            {canDelete && <button onClick={handleDelete} style={{ ...styles.actionBtn, color: '#dc3545' }}>Delete</button>}
                         </div>
                     )}
                     {post.createdAt && (

@@ -14,8 +14,10 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Search states
-    const [searchBy, setSearchBy] = useState('username');
-    const [searchValue, setSearchValue] = useState('');
+    const [searchUsername, setSearchUsername] = useState('');
+    const [searchAge, setSearchAge] = useState('');
+    const [searchLanguage, setSearchLanguage] = useState('');
+    const [searchGender, setSearchGender] = useState('');
     const [languages, setLanguages] = useState([]);
 
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/groups';
@@ -224,60 +226,47 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
             <div style={styles.footerRow}>
                 {isCreating ? (
                     <form onSubmit={handleStartPrivateChat} style={styles.createForm}>
-                        <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: '#555', textAlign: 'left' }}>Search for user:</p>
+                        <p style={{ margin: '0 0 5px 0', fontSize: '12px', color: '#555', textAlign: 'left' }}>Search criteria (All apply):</p>
 
-                        <div style={{ display: 'flex', gap: '5px', marginBottom: '5px' }}>
-                            <select
-                                value={searchBy}
-                                onChange={(e) => setSearchBy(e.target.value)}
-                                style={{ ...styles.createInput, flex: 1, padding: '4px', fontSize: '12px' }}
-                            >
-                                <option value="username">Username</option>
-                                <option value="age">Age</option>
-                                <option value="language">Language</option>
-                                <option value="gender">Gender</option>
-                            </select>
-                            {searchBy === 'gender' ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '5px' }}>
+                            <input
+                                type="text"
+                                value={searchUsername}
+                                onChange={(e) => setSearchUsername(e.target.value)}
+                                placeholder="Username..."
+                                style={{ ...styles.createInput, padding: '4px', fontSize: '12px' }}
+                            />
+                            <div style={{ display: 'flex', gap: '5px' }}>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={searchAge}
+                                    onChange={(e) => setSearchAge(e.target.value)}
+                                    placeholder="Age..."
+                                    style={{ ...styles.createInput, flex: 1, padding: '4px', fontSize: '12px' }}
+                                />
                                 <select
-                                    value={searchValue}
-                                    onChange={(e) => setSearchValue(e.target.value)}
-                                    style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
+                                    value={searchGender}
+                                    onChange={(e) => setSearchGender(e.target.value)}
+                                    style={{ ...styles.createInput, flex: 1, padding: '4px', fontSize: '12px' }}
                                 >
-                                    <option value="">Any</option>
+                                    <option value="">Any Gender</option>
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
                                     <option value="Other">Other</option>
                                     <option value="Prefer not to say">Prefer not to say</option>
                                 </select>
-                            ) : searchBy === 'age' ? (
-                                <input
-                                    type="number"
-                                    min="0"
-                                    value={searchValue}
-                                    onChange={(e) => setSearchValue(e.target.value)}
-                                    placeholder="Age..."
-                                    style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
-                                />
-                            ) : searchBy === 'language' ? (
-                                <select
-                                    value={searchValue}
-                                    onChange={(e) => setSearchValue(e.target.value)}
-                                    style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
-                                >
-                                    <option value="">Any</option>
-                                    {languages.map(lang => (
-                                        <option key={lang.code} value={lang.code}>{lang.name}</option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <input
-                                    type="text"
-                                    value={searchValue}
-                                    onChange={(e) => setSearchValue(e.target.value)}
-                                    placeholder={`Search by ${searchBy}...`}
-                                    style={{ ...styles.createInput, flex: 2, padding: '4px', fontSize: '12px' }}
-                                />
-                            )}
+                            </div>
+                            <select
+                                value={searchLanguage}
+                                onChange={(e) => setSearchLanguage(e.target.value)}
+                                style={{ ...styles.createInput, padding: '4px', fontSize: '12px' }}
+                            >
+                                <option value="">Any Language</option>
+                                {languages.map(lang => (
+                                    <option key={lang.code} value={lang.code}>{lang.name}</option>
+                                ))}
+                            </select>
                         </div>
 
                         <select
@@ -301,21 +290,22 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                                     );
                                     if (hasExistingChat) return false;
 
-                                    // 3. Apply search filter
-                                    if (searchValue.trim() !== '') {
-                                        const searchLower = searchValue.toLowerCase().trim();
-                                        if (searchBy === 'username') {
-                                            if (!u.username || !u.username.toLowerCase().includes(searchLower)) return false;
-                                        } else if (searchBy === 'age') {
-                                            if (!u.age || u.age.toString() !== searchLower) return false;
-                                        } else if (searchBy === 'language') {
-                                            if (Array.isArray(u.language)) {
-                                                if (!u.language.some(lang => lang.toLowerCase() === searchLower)) return false;
-                                            } else {
-                                                if (!u.language || u.language.toLowerCase() !== searchLower) return false;
-                                            }
-                                        } else if (searchBy === 'gender') {
-                                            if (!u.gender || u.gender.toLowerCase() !== searchLower) return false;
+                                    // 3. Apply all search filters
+                                    if (searchUsername.trim() !== '') {
+                                        if (!u.username || !u.username.toLowerCase().includes(searchUsername.toLowerCase().trim())) return false;
+                                    }
+                                    if (searchAge.trim() !== '') {
+                                        if (u.age === undefined || u.age === null || u.age.toString() !== searchAge.trim()) return false;
+                                    }
+                                    if (searchGender.trim() !== '') {
+                                        if (!u.gender || u.gender.toLowerCase() !== searchGender.toLowerCase().trim()) return false;
+                                    }
+                                    if (searchLanguage.trim() !== '') {
+                                        const searchLangLower = searchLanguage.toLowerCase().trim();
+                                        if (Array.isArray(u.language)) {
+                                            if (!u.language.some(lang => lang.toLowerCase() === searchLangLower)) return false;
+                                        } else {
+                                            if (!u.language || u.language.toLowerCase() !== searchLangLower) return false;
                                         }
                                     }
 
@@ -336,7 +326,10 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                                 onClick={() => {
                                     setIsCreating(false);
                                     setSelectedUser('');
-                                    setSearchValue(''); // reset search on close
+                                    setSearchUsername('');
+                                    setSearchAge('');
+                                    setSearchLanguage('');
+                                    setSearchGender('');
                                 }}
                                 style={styles.cancelBtn}
                             >

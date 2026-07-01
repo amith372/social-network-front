@@ -13,6 +13,11 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
     const [errorMsg, setErrorMsg] = useState('');
     const [showMembers, setShowMembers] = useState(false);
 
+    // Group editing states
+    const [isEditingGroup, setIsEditingGroup] = useState(false);
+    const [editGroupName, setEditGroupName] = useState('');
+    const [editGroupDesc, setEditGroupDesc] = useState('');
+
     // Parse currentUserId from token
     const token = localStorage.getItem('token');
     let currentUserId = null;
@@ -55,6 +60,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
     // React יריץ את fetchPosts מחדש בכל פעם שהמשתמש יחליף קבוצה!
     useEffect(() => {
         fetchPosts();
+        setIsEditingGroup(false);
 
         const socket = io('https://social-network-backend-android2-project.onrender.com');
 
@@ -68,6 +74,20 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
                 }
                 return [newPost, ...prevPosts];
             });
+        });
+
+        socket.on('update_post', (updatedPost) => {
+            setPosts((prevPosts) => prevPosts.map(p => p._id === updatedPost._id ? updatedPost : p));
+        });
+
+        socket.on('delete_post', (postId) => {
+            setPosts((prevPosts) => prevPosts.filter(p => p._id !== postId));
+        });
+
+        socket.on('update_group', (updatedGroup) => {
+            if (selectedGroup._id === updatedGroup._id) {
+                setSelectedGroup(updatedGroup);
+            }
         });
 
         return () => {
@@ -111,22 +131,84 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
         setPosts(prevPosts => prevPosts.filter(p => p._id !== postId));
     };
 
+    const handleSaveGroup = async () => {
+        if (!editGroupName.trim()) {
+            alert("Group name cannot be empty");
+            return;
+        }
+        try {
+            const token = localStorage.getItem('token');
+            const response = await axios.put(`https://social-network-backend-android2-project.onrender.com/api/groups/${selectedGroup._id}`, {
+                name: editGroupName,
+                description: editGroupDesc
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setSelectedGroup(response.data);
+            setIsEditingGroup(false);
+        } catch (error) {
+            console.error("Failed to update group:", error);
+            alert("Failed to update group");
+        }
+    };
+
     return (
         <div style={{ position: 'relative' }}>
             {/* Header section with title and optional Members button */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                <h2 style={{ margin: 0 }}>
-                    {selectedGroup._id === "000000000000000000000000" ? "Main Feed (Public)" : selectedGroup.name}
-                </h2>
-                {selectedGroup._id !== "000000000000000000000000" && selectedGroup.isGroupChat && (
-                    <button
-                        onClick={() => setShowMembers(true)}
-                        style={{ backgroundColor: '#17a2b8', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
-                        View Members
-                    </button>
-                )}
-            </div>
+            {isEditingGroup ? (
+                <div style={{ marginBottom: '15px', padding: '15px', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
+                    <input
+                        type="text"
+                        value={editGroupName}
+                        onChange={(e) => setEditGroupName(e.target.value)}
+                        style={{ width: '100%', marginBottom: '10px', padding: '8px', boxSizing: 'border-box' }}
+                        placeholder="Group Name"
+                    />
+                    <textarea
+                        value={editGroupDesc}
+                        onChange={(e) => setEditGroupDesc(e.target.value)}
+                        style={{ width: '100%', marginBottom: '10px', padding: '8px', boxSizing: 'border-box' }}
+                        placeholder="Group Description"
+                    />
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button onClick={handleSaveGroup} style={{ backgroundColor: '#28a745', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Save</button>
+                        <button onClick={() => setIsEditingGroup(false)} style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Cancel</button>
+                    </div>
+                </div>
+            ) : (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
+                    <div>
+                        <h2 style={{ margin: 0 }}>
+                            {selectedGroup._id === "000000000000000000000000" ? "Main Feed (Public)" : selectedGroup.name}
+                        </h2>
+                        {selectedGroup.description && (
+                            <p style={{ margin: '5px 0 0 0', color: '#555', fontSize: '14px' }}>{selectedGroup.description}</p>
+                        )}
+                    </div>
+                    {selectedGroup._id !== "000000000000000000000000" && selectedGroup.isGroupChat && (
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                            {isAdmin && (
+                                <button
+                                    onClick={() => {
+                                        setEditGroupName(selectedGroup.name);
+                                        setEditGroupDesc(selectedGroup.description || '');
+                                        setIsEditingGroup(true);
+                                    }}
+                                    style={{ backgroundColor: '#ffc107', color: 'black', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                                >
+                                    Edit Group
+                                </button>
+                            )}
+                            <button
+                                onClick={() => setShowMembers(true)}
+                                style={{ backgroundColor: '#17a2b8', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}
+                            >
+                                View Members
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
 
             <CreatePost onPublish={handlePublishPost} />
 
