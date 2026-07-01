@@ -92,7 +92,10 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             );
 
             const newlyCreatedPost = response.data;
-            setPosts((prevPosts) => [newlyCreatedPost, ...prevPosts]);
+            setPosts((prevPosts) => {
+                if (prevPosts.find(p => p._id === newlyCreatedPost._id)) return prevPosts;
+                return [newlyCreatedPost, ...prevPosts];
+            });
 
         } catch (error) {
             console.error("Error publishing post:", error);
