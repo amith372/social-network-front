@@ -125,6 +125,21 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
             }
         });
 
+        socket.on('new_user', (newUser) => {
+            setAllUsers(prev => {
+                if (prev.find(u => u._id === newUser._id)) return prev;
+                return [...prev, newUser];
+            });
+        });
+
+        socket.on('update_user', (updatedUser) => {
+            setAllUsers(prev => prev.map(u => u._id === updatedUser._id ? updatedUser : u));
+        });
+
+        socket.on('delete_user', (deletedUserId) => {
+            setAllUsers(prev => prev.filter(u => u._id !== deletedUserId));
+        });
+
         return () => socket.disconnect();
     }, []);
 

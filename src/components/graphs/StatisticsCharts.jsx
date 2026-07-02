@@ -81,6 +81,7 @@ export default function StatisticsCharts() {
         socket.on('update_user', () => fetchData());
         socket.on('new_group', () => fetchData());
         socket.on('update_group', () => fetchData());
+        socket.on('delete_user', () => fetchData());
 
         return () => socket.disconnect();
     }, []);
