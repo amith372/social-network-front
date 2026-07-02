@@ -224,8 +224,14 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
                 </div>
             )}
 
-            {selectedGroup._id !== "111111111111111111111111" && (
+            {selectedGroup._id !== "111111111111111111111111" && !selectedGroup.isDeletedUserChat && (
                 <CreatePost onPublish={handlePublishPost} />
+            )}
+
+            {selectedGroup.isDeletedUserChat && (
+                <div style={{ textAlign: 'center', padding: '15px', color: '#777', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '15px' }}>
+                    <p style={{ margin: 0, fontStyle: 'italic' }}>You cannot send messages to a deleted user.</p>
+                </div>
             )}
 
             {errorMsg && <p style={{ color: 'red', textAlign: 'center' }}>{errorMsg}</p>}
