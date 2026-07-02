@@ -24,11 +24,27 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
     const USERS_API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users';
 
     const getChatDisplayName = (chat, fetchedUsers, currentUsername) => {
-        const memberIds = (chat?.members || []).map(m => typeof m === 'object' ? m._id : m);
+        const members = (chat?.members || []).map(m => {
+            if (typeof m === 'object' && m !== null) {
+                return m;
+            }
+            return { _id: m };
+        });
 
-        for (const id of memberIds) {
-            const user = fetchedUsers.find(u => u._id === id);
-            if (user && user.username && user.username !== currentUsername) {
+        for (const member of members) {
+            if (member.username && member.username !== currentUsername) {
+                return member.username;
+            }
+        }
+
+        for (const member of members) {
+            const id = member._id;
+            const user = fetchedUsers.find(u => {
+                const userId = u?._id?.toString?.() || u?._id;
+                return userId && String(userId) === String(id);
+            });
+
+            if (user?.username && user.username !== currentUsername) {
                 return user.username;
             }
         }
