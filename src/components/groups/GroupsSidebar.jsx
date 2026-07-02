@@ -56,9 +56,9 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                     try {
                         const payload = JSON.parse(atob(token.split('.')[1]));
                         const myUserId = payload.id;
-                        
+
                         // Check if we are a member of this new group
-                        const isMember = newGroup.members.some(m => 
+                        const isMember = newGroup.members.some(m =>
                             (typeof m === 'object' ? m._id : m) === myUserId
                         );
 
