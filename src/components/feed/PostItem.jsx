@@ -100,7 +100,8 @@ const styles = {
     },
     content: {
         fontSize: '16px',
-        margin: '0 0 15px 0'
+        margin: '0 0 15px 0',
+        whiteSpace: 'pre-wrap'
     },
     footer: {
         borderTop: '1px solid #eee',
