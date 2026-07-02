@@ -52,6 +52,9 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
     const canDelete = isAdmin || isAuthor;
     const canEdit = isAuthor;
 
+    const groupName = post.group?.name;
+    const isPublic = !post.group || post.group === "000000000000000000000000" || post.group._id === "000000000000000000000000";
+
     return (
         <div style={styles.card}>
             {isEditing ? (
@@ -71,7 +74,9 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
             )}
 
             <div style={styles.footer}>
-                <small style={styles.author}>Posted by: {authorName}</small>
+                <small style={styles.author}>
+                    Posted by: {authorName} {!isPublic && groupName ? ` in ${groupName}` : ''}
+                </small>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {(canEdit || canDelete) && !isEditing && (

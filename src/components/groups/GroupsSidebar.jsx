@@ -160,6 +160,17 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                 {activeTab === 'myGroups' && (
                     <>
                         <div
+                            onClick={() => setSelectedGroup({ _id: "111111111111111111111111", name: "My Feed" })}
+                            style={{
+                                ...styles.groupItem,
+                                fontWeight: selectedGroup && selectedGroup._id === "111111111111111111111111" ? 'bold' : 'normal',
+                                backgroundColor: selectedGroup && selectedGroup._id === "111111111111111111111111" ? '#e6f7ff' : 'transparent',
+                                marginBottom: '5px'
+                            }}
+                        >
+                            📱 My Feed
+                        </div>
+                        <div
                             onClick={() => setSelectedGroup({ _id: "000000000000000000000000", name: "Public Feed" })}
                             style={{
                                 ...styles.groupItem,

@@ -64,7 +64,11 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
 
         const socket = io('https://social-network-backend-android2-project.onrender.com');
 
-        socket.emit('join room', selectedGroup._id);
+        if (selectedGroup._id === "111111111111111111111111") {
+            socket.emit('join my_feed', currentUserId);
+        } else {
+            socket.emit('join room', selectedGroup._id);
+        }
 
         socket.on('new_post', (newPost) => {
             setPosts((prevPosts) => {
@@ -91,7 +95,11 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
         });
 
         return () => {
-            socket.emit('leave room', selectedGroup._id);
+            if (selectedGroup._id === "111111111111111111111111") {
+                socket.emit('leave my_feed', currentUserId);
+            } else {
+                socket.emit('leave room', selectedGroup._id);
+            }
             socket.disconnect();
         };
     }, [selectedGroup._id]);
@@ -103,8 +111,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             const response = await axios.post(API_URL,
                 {
                     content: newContent,
-                    // 4. משייך את הפוסט החדש לקבוצה שהמשתמש מסתכל עליה כרגע
-                    group: selectedGroup._id
+                    group: selectedGroup._id === "111111111111111111111111" ? "000000000000000000000000" : selectedGroup._id
                 },
                 {
                     headers: { Authorization: `Bearer ${token}` }
@@ -112,9 +119,14 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             );
 
             const newlyCreatedPost = response.data;
+            const isMyFeed = selectedGroup._id === "111111111111111111111111";
             setPosts((prevPosts) => {
                 if (prevPosts.find(p => p._id === newlyCreatedPost._id)) return prevPosts;
-                return [newlyCreatedPost, ...prevPosts];
+                // Add to My Feed or if it matches the current group
+                if (isMyFeed || selectedGroup._id === newlyCreatedPost.group || (selectedGroup._id === "000000000000000000000000" && newlyCreatedPost.group === "000000000000000000000000")) {
+                    return [newlyCreatedPost, ...prevPosts];
+                }
+                return prevPosts;
             });
 
         } catch (error) {
@@ -179,7 +191,9 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
                     <div>
                         <h2 style={{ margin: 0 }}>
-                            {selectedGroup._id === "000000000000000000000000" ? "Main Feed (Public)" : selectedGroup.name}
+                            {selectedGroup._id === "111111111111111111111111" ? "My Feed"
+                                : selectedGroup._id === "000000000000000000000000" ? "Main Feed (Public)"
+                                    : selectedGroup.name}
                         </h2>
                         {selectedGroup.description && (
                             <p style={{ margin: '5px 0 0 0', color: '#555', fontSize: '14px' }}>{selectedGroup.description}</p>
@@ -210,7 +224,9 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
                 </div>
             )}
 
-            <CreatePost onPublish={handlePublishPost} />
+            {selectedGroup._id !== "111111111111111111111111" && (
+                <CreatePost onPublish={handlePublishPost} />
+            )}
 
             {errorMsg && <p style={{ color: 'red', textAlign: 'center' }}>{errorMsg}</p>}
 

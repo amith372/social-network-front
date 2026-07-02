@@ -4,13 +4,13 @@ import MainFeed from '../components/feed/MainFeed';
 import GroupsSidebar from '../components/groups/GroupsSidebar';
 import StatisticsCharts from '../components/graphs/StatisticsCharts';
 
-const PUBLIC_GROUP = {
-    _id: "000000000000000000000000",
-    name: "Public Feed"
+const MY_FEED = {
+    _id: "111111111111111111111111",
+    name: "My Feed"
 };
 
 export default function Home() {
-    const [selectedGroup, setSelectedGroup] = useState(PUBLIC_GROUP); // Default to public feed
+    const [selectedGroup, setSelectedGroup] = useState(MY_FEED); // Default to My Feed
 
     return (
 
