@@ -20,7 +20,7 @@ export default function StatisticsCharts() {
 
             // Fetch users, groups, and languages
             const [usersRes, groupsRes, langsRes] = await Promise.all([
-                axios.get(USERS_API_URL, { headers }),
+                axios.get(`${USERS_API_URL}?includeSelf=true`, { headers }),
                 axios.get(GROUPS_API_URL, { headers }),
                 axios.get('https://libretranslate.com/languages').catch(() => ({ data: [] }))
             ]);
@@ -78,6 +78,7 @@ export default function StatisticsCharts() {
 
         // Listen for new users or groups to update stats
         socket.on('new_user', () => fetchData());
+        socket.on('update_user', () => fetchData());
         socket.on('new_group', () => fetchData());
         socket.on('update_group', () => fetchData());
 

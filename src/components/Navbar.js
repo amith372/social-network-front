@@ -46,7 +46,7 @@ export default function Navbar({ isLoggedIn, username, onLogout, onUpdateUsernam
             const dataToUpdate = {};
             if (profileData.username.trim()) dataToUpdate.username = profileData.username;
             if (profileData.gender) dataToUpdate.gender = profileData.gender;
-            if (profileData.spokenLanguages.length > 0) dataToUpdate.spokenLanguages = profileData.spokenLanguages;
+            if (profileData.spokenLanguages.length > 0) dataToUpdate.language = profileData.spokenLanguages;
 
             const res = await axios.put(`${USERS_API_URL}/me`, dataToUpdate, {
                 headers: { Authorization: `Bearer ${token}` }
