@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ChatSidebar from '../components/chat/ChatSidebar';
 import MainFeed from '../components/feed/MainFeed';
 import GroupsSidebar from '../components/groups/GroupsSidebar';
+import StatisticsCharts from '../components/graphs/StatisticsCharts';
 
 const PUBLIC_GROUP = {
     _id: "000000000000000000000000",
@@ -23,6 +24,7 @@ export default function Home() {
             {/* feed column*/}
             <div style={styles.centerColumn}>
                 <MainFeed selectedGroup={selectedGroup} setSelectedGroup={setSelectedGroup} />
+                <StatisticsCharts />
             </div>
 
             {/* groups column */}
