@@ -4,6 +4,7 @@ import axios from 'axios';
 export default function MemberListModal({ group, currentUserId, isAdmin, onClose, onGroupUpdate }) {
     const [members, setMembers] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
+    const [joinRequests, setJoinRequests] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedNewUser, setSelectedNewUser] = useState('');
 
@@ -25,11 +26,14 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
 
                 // Group members array might contain IDs or populated objects. We need their IDs to filter correctly.
                 const memberIds = (group.members || []).map(m => typeof m === 'object' ? m._id : m);
+                const requestIds = (group.joinRequests || []).map(r => typeof r === 'object' ? r._id : r);
 
                 const groupMembers = res.data.filter(u => memberIds.includes(u._id));
-                const nonMembers = res.data.filter(u => !memberIds.includes(u._id));
+                const joinRequestUsers = res.data.filter(u => requestIds.includes(u._id));
+                const nonMembers = res.data.filter(u => !memberIds.includes(u._id) && !requestIds.includes(u._id));
 
                 setMembers(groupMembers);
+                setJoinRequests(joinRequestUsers);
                 setAllUsers(nonMembers);
             } catch (err) {
                 console.error("Failed to fetch users", err);
@@ -109,6 +113,40 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
         }
     };
 
+    const handleAcceptRequest = async (userId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const headers = { Authorization: `Bearer ${token}` };
+            await axios.post(`${GROUPS_API_URL}/${group._id}/accept-join`, { userId }, { headers });
+
+            const acceptedUser = joinRequests.find(u => u._id === userId);
+            setJoinRequests(joinRequests.filter(u => u._id !== userId));
+            if (acceptedUser) {
+                setMembers([...members, acceptedUser]);
+            }
+        } catch (err) {
+            console.error("Failed to accept request", err);
+            alert("Failed to accept request");
+        }
+    };
+
+    const handleRejectRequest = async (userId) => {
+        try {
+            const token = localStorage.getItem('token');
+            const headers = { Authorization: `Bearer ${token}` };
+            await axios.post(`${GROUPS_API_URL}/${group._id}/reject-join`, { userId }, { headers });
+
+            const rejectedUser = joinRequests.find(u => u._id === userId);
+            setJoinRequests(joinRequests.filter(u => u._id !== userId));
+            if (rejectedUser) {
+                setAllUsers([...allUsers, rejectedUser]);
+            }
+        } catch (err) {
+            console.error("Failed to reject request", err);
+            alert("Failed to reject request");
+        }
+    };
+
     return (
         <div style={styles.overlay}>
             <div style={styles.modal}>
@@ -134,6 +172,23 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
                                 </li>
                             ))}
                         </ul>
+
+                        {isAdmin && joinRequests.length > 0 && (
+                            <div style={{ marginTop: '20px', borderTop: '2px solid #333', paddingTop: '10px' }}>
+                                <h4 style={{ margin: '0 0 10px 0', textAlign: 'center' }}>requests</h4>
+                                <ul style={styles.memberList}>
+                                    {joinRequests.map(user => (
+                                        <li key={user._id} style={styles.memberItem}>
+                                            <span>{user.username}</span>
+                                            <div style={{ display: 'flex', gap: '5px' }}>
+                                                <button onClick={() => handleAcceptRequest(user._id)} style={{ ...styles.acceptBtn, fontWeight: 'bold' }}>V</button>
+                                                <button onClick={() => handleRejectRequest(user._id)} style={{ ...styles.removeBtn, fontWeight: 'bold' }}>X</button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
 
                         {isAdmin && (
                             <div style={styles.addSection}>
@@ -214,6 +269,24 @@ const styles = {
     },
     removeBtn: {
         backgroundColor: '#dc3545',
+        color: 'white',
+        border: 'none',
+        padding: '4px 8px',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontSize: '12px'
+    },
+    acceptBtn: {
+        backgroundColor: '#28a745',
+        color: 'white',
+        border: 'none',
+        padding: '4px 8px',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontSize: '12px'
+    },
+    rejectBtn: {
+        backgroundColor: '#6c757d',
         color: 'white',
         border: 'none',
         padding: '4px 8px',

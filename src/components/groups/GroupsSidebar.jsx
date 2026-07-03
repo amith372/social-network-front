@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 
 // 1. מקבלים את selectedGroup ו-setSelectedGroup
 export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
     const [groups, setGroups] = useState([]);
+    const [allPublicGroups, setAllPublicGroups] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [errorMsg, setErrorMsg] = useState('');
 
@@ -23,6 +24,20 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
     const [searchResults, setSearchResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
 
+    const searchQueryRef = useRef(searchQuery);
+    useEffect(() => {
+        searchQueryRef.current = searchQuery;
+    }, [searchQuery]);
+
+    // Parse currentUserId
+    const token = localStorage.getItem('token');
+    let currentUserId = null;
+    if (token) {
+        try {
+            currentUserId = JSON.parse(atob(token.split('.')[1])).id;
+        } catch (e) { }
+    }
+
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/groups';
     const USERS_API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users';
 
@@ -32,12 +47,15 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                 const token = localStorage.getItem('token');
                 const headers = { Authorization: `Bearer ${token}` };
 
-                const [groupsRes, usersRes] = await Promise.all([
+                const [groupsRes, allGroupsRes, usersRes] = await Promise.all([
                     axios.get(`${API_URL}?myGroups=true&isGroupChat=true`, { headers }),
+                    axios.get(`${API_URL}?isGroupChat=true`, { headers }),
                     axios.get(USERS_API_URL, { headers })
                 ]);
 
                 setGroups(groupsRes.data);
+                setAllPublicGroups(allGroupsRes.data);
+                setSearchResults(allGroupsRes.data);
                 setAllUsers(usersRes.data);
             } catch (error) {
                 console.error("Error fetching sidebar data:", error);
@@ -68,6 +86,21 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                                 return [...prev, newGroup];
                             });
                         }
+
+                        setAllPublicGroups(prev => {
+                            if (prev.find(g => g._id === newGroup._id)) return prev;
+                            return [...prev, newGroup];
+                        });
+
+                        setSearchResults(prev => {
+                            // Only add to search results if it matches current search query (or if query is empty)
+                            if (prev.find(g => g._id === newGroup._id)) return prev;
+                            const currentQuery = searchQueryRef.current;
+                            if (!currentQuery.trim() || newGroup.name.toLowerCase().includes(currentQuery.toLowerCase())) {
+                                return [...prev, newGroup];
+                            }
+                            return prev;
+                        });
                     } catch (e) {
                         console.error("Error decoding token for socket", e);
                     }
@@ -92,6 +125,9 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                         } else {
                             setGroups(prev => prev.map(g => g._id === updatedGroup._id ? updatedGroup : g));
                         }
+
+                        setAllPublicGroups(prev => prev.map(g => g._id === updatedGroup._id ? updatedGroup : g));
+                        setSearchResults(prev => prev.map(g => g._id === updatedGroup._id ? updatedGroup : g));
                     } catch (e) {
                         console.error("Error decoding token for socket", e);
                     }
@@ -165,20 +201,39 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
         }
     };
 
-    const handleSearch = async (e) => {
+    const handleSearch = (e) => {
         e.preventDefault();
-        if (!searchQuery.trim()) return;
+        if (!searchQuery.trim()) {
+            setSearchResults(allPublicGroups);
+            return;
+        }
         setIsSearching(true);
+        const results = allPublicGroups.filter(g => g.name.toLowerCase().includes(searchQuery.toLowerCase()));
+        setSearchResults(results);
+        setIsSearching(false);
+    };
+
+    const handleJoinRequest = async (groupId) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await axios.get(`${API_URL}?q=${searchQuery}`, {
+            await axios.post(`${API_URL}/${groupId}/request-join`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setSearchResults(response.data);
+            setAllPublicGroups(prev => prev.map(g => {
+                if (g._id === groupId) {
+                    return { ...g, joinRequests: [...(g.joinRequests || []), currentUserId] };
+                }
+                return g;
+            }));
+            setSearchResults(prev => prev.map(g => {
+                if (g._id === groupId) {
+                    return { ...g, joinRequests: [...(g.joinRequests || []), currentUserId] };
+                }
+                return g;
+            }));
+            alert("Join request sent!");
         } catch (error) {
-            alert("Search failed.");
-        } finally {
-            setIsSearching(false);
+            alert(error.response?.data?.message || "Failed to send join request.");
         }
     };
 
@@ -256,20 +311,51 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                         {isSearching ? (
                             <p style={{ color: '#777' }}>Searching...</p>
                         ) : (
-                            searchResults.map(group => (
-                                <div
-                                    key={group._id}
-                                    onClick={() => setSelectedGroup(group)}
-                                    style={{
-                                        ...styles.groupItem,
-                                        backgroundColor: selectedGroup && selectedGroup._id === group._id ? '#e6f7ff' : '#f8f9fa',
-                                        fontWeight: selectedGroup && selectedGroup._id === group._id ? 'bold' : 'normal',
-                                        marginBottom: '5px'
-                                    }}
-                                >
-                                    {group.name}
-                                </div>
-                            ))
+                            searchResults.map(group => {
+                                const isMember = group.members && group.members.some(m => (typeof m === 'object' ? m._id : m) === currentUserId);
+                                const isPending = group.joinRequests && group.joinRequests.includes(currentUserId);
+                                return (
+                                    <div
+                                        key={group._id}
+                                        style={{
+                                            ...styles.groupItem,
+                                            backgroundColor: selectedGroup && selectedGroup._id === group._id ? '#e6f7ff' : '#f8f9fa',
+                                            marginBottom: '5px',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <div
+                                            onClick={() => isMember ? setSelectedGroup(group) : null}
+                                            style={{
+                                                cursor: isMember ? 'pointer' : 'default',
+                                                fontWeight: selectedGroup && selectedGroup._id === group._id ? 'bold' : 'normal',
+                                                flex: 1
+                                            }}
+                                        >
+                                            {group.name}
+                                        </div>
+                                        {!isMember && (
+                                            <button
+                                                onClick={() => !isPending && handleJoinRequest(group._id)}
+                                                disabled={isPending}
+                                                style={{
+                                                    fontSize: '12px',
+                                                    padding: '4px 8px',
+                                                    cursor: isPending ? 'not-allowed' : 'pointer',
+                                                    backgroundColor: isPending ? '#6c757d' : '#007bff',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '4px'
+                                                }}
+                                            >
+                                                {isPending ? 'Pending' : 'Join'}
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })
                         )}
                     </>
                 )}
