@@ -18,6 +18,13 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
     const [editGroupName, setEditGroupName] = useState('');
     const [editGroupDesc, setEditGroupDesc] = useState('');
 
+    // Feed search states
+    const [searchKeyword, setSearchKeyword] = useState('');
+    const [searchAuthor, setSearchAuthor] = useState('');
+    const [searchGroup, setSearchGroup] = useState('');
+    const [searchStartDate, setSearchStartDate] = useState('');
+    const [searchEndDate, setSearchEndDate] = useState('');
+
     // Parse currentUserId from token
     const token = localStorage.getItem('token');
     let currentUserId = null;
@@ -33,32 +40,28 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
 
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/posts';
 
-    const fetchPosts = async () => {
-        setIsLoading(true);
-        setErrorMsg('');
-
-        try {
-            const token = localStorage.getItem('token');
-
-            // 2. משתמשים ב-Prop הדינמי כדי למשוך את הפוסטים של הקבוצה הספציפית
-            const response = await axios.get(`${API_URL}?group=${selectedGroup._id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            setPosts(response.data);
-
-        } catch (error) {
-            console.error("Error fetching posts:", error);
-            setErrorMsg(error.response?.data?.message || "Failed to fetch posts from server.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
     // 3. החלק הכי חשוב כאן! 
     // ברגע שאנחנו מכניסים את selectedGroupId לתוך מערך התלויות (סוגריים מרובעים), 
     // React יריץ את fetchPosts מחדש בכל פעם שהמשתמש יחליף קבוצה!
     useEffect(() => {
+        const fetchPosts = async () => {
+            setIsLoading(true);
+            setErrorMsg('');
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await axios.get(`${API_URL}?group=${selectedGroup._id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setPosts(response.data);
+            } catch (error) {
+                console.error("Error fetching posts:", error);
+                setErrorMsg(error.response?.data?.message || "Failed to fetch posts from server.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
         fetchPosts();
         setIsEditingGroup(false);
 
@@ -92,6 +95,23 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             if (selectedGroup._id === updatedGroup._id) {
                 setSelectedGroup(updatedGroup);
             }
+            if (selectedGroup._id === "111111111111111111111111") {
+                const isMember = updatedGroup.members.some(m => (typeof m === 'object' ? m._id : m) === currentUserId);
+                if (isMember) {
+                    socket.emit('join room', updatedGroup._id);
+                } else {
+                    socket.emit('leave room', updatedGroup._id);
+                }
+            }
+        });
+
+        socket.on('new_group', (newGroup) => {
+            if (selectedGroup._id === "111111111111111111111111") {
+                const isMember = newGroup.members.some(m => (typeof m === 'object' ? m._id : m) === currentUserId);
+                if (isMember) {
+                    socket.emit('join room', newGroup._id);
+                }
+            }
         });
 
         socket.on('delete_group', (deletedGroupId) => {
@@ -108,7 +128,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             }
             socket.disconnect();
         };
-    }, [selectedGroup._id]);
+    }, [selectedGroup._id, currentUserId, setSelectedGroup]);
 
     const handlePublishPost = async (newContent) => {
         try {
@@ -185,6 +205,19 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
         }
     };
 
+    const filteredPosts = posts.filter(post => {
+        if (selectedGroup._id !== "111111111111111111111111") return true;
+
+        if (searchKeyword && !post.content.toLowerCase().includes(searchKeyword.toLowerCase())) return false;
+        if (searchAuthor && !post.author?.username.toLowerCase().includes(searchAuthor.toLowerCase())) return false;
+        if (searchGroup && !post.group?.name?.toLowerCase().includes(searchGroup.toLowerCase())) return false;
+
+        if (searchStartDate && new Date(post.createdAt) < new Date(searchStartDate)) return false;
+        if (searchEndDate && new Date(post.createdAt) > new Date(searchEndDate + "T23:59:59")) return false;
+
+        return true;
+    });
+
     return (
         <div style={{ position: 'relative' }}>
             {/* Header section with title and optional Members button */}
@@ -258,15 +291,32 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
                 </div>
             )}
 
+            {selectedGroup._id === "111111111111111111111111" && (
+                <div style={{ marginBottom: '15px', padding: '15px', backgroundColor: '#f5f5f5', borderRadius: '8px', display: 'flex', flexWrap: 'wrap', gap: '10px', border: '1px solid #e0e0e0' }}>
+                    <h4 style={{ margin: '0 0 5px 0', width: '100%', color: '#333' }}>Search Feed</h4>
+                    <input type="text" placeholder="Search message..." value={searchKeyword} onChange={e => setSearchKeyword(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', flex: '1 1 150px' }} />
+                    <input type="text" placeholder="Search author..." value={searchAuthor} onChange={e => setSearchAuthor(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', flex: '1 1 150px' }} />
+                    <input type="text" placeholder="Search group..." value={searchGroup} onChange={e => setSearchGroup(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', flex: '1 1 150px' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flex: '1 1 200px' }}>
+                        <label style={{ fontSize: '12px', color: '#555' }}>From:</label>
+                        <input type="date" value={searchStartDate} onChange={e => setSearchStartDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', flex: 1 }} />
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flex: '1 1 200px' }}>
+                        <label style={{ fontSize: '12px', color: '#555' }}>To:</label>
+                        <input type="date" value={searchEndDate} onChange={e => setSearchEndDate(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', flex: 1 }} />
+                    </div>
+                </div>
+            )}
+
             {errorMsg && <p style={{ color: 'red', textAlign: 'center' }}>{errorMsg}</p>}
 
             {isLoading ? (
                 <p style={{ textAlign: 'center' }}>Loading posts...</p>
-            ) : posts.length === 0 ? (
+            ) : filteredPosts.length === 0 ? (
                 <p style={{ textAlign: 'center', color: '#777' }}>No posts to show. Be the first to post!</p>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '500px', overflowY: 'auto', paddingRight: '10px' }}>
-                    {posts.map(post => (
+                    {filteredPosts.map(post => (
                         <PostItem
                             key={post._id}
                             post={post}

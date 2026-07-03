@@ -38,7 +38,7 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
             }
         };
         fetchUsers();
-    }, [group]);
+    }, [group, currentUserId]);
 
     const handleRemoveMember = async (userId) => {
         if (!window.confirm("Are you sure you want to remove this member?")) return;
