@@ -3,17 +3,20 @@ import React, { useState } from 'react';
 export default function CreatePost({ onPublish }) {
     const [postContent, setPostContent] = useState('');
 
+    const [attachment, setAttachment] = useState(null);
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // מונע שליחת פוסט ריק
-        if (!postContent.trim()) return;
+        // מונע שליחת פוסט ריק אם אין גם טקסט וגם אין קובץ
+        if (!postContent.trim() && !attachment) return;
 
         // מפעיל את הפונקציה שנקבל מההורה (MainFeed)
-        onPublish(postContent);
+        onPublish(postContent, attachment);
 
-        // מנקה את תיבת הטקסט אחרי הפרסום
+        // מנקה את התיבות אחרי הפרסום
         setPostContent('');
+        setAttachment(null);
     };
 
     return (
@@ -26,9 +29,18 @@ export default function CreatePost({ onPublish }) {
                     onChange={(e) => setPostContent(e.target.value)}
                     rows="3"
                 />
-                <button type="submit" style={styles.button}>
-                    Publish Post
-                </button>
+                
+                <div style={styles.actionRow}>
+                    <input 
+                        type="file" 
+                        accept="image/*,video/*"
+                        onChange={(e) => setAttachment(e.target.files[0])}
+                        style={{ fontSize: '14px' }}
+                    />
+                    <button type="submit" style={styles.button}>
+                        Publish Post
+                    </button>
+                </div>
             </form>
         </div>
     );
@@ -50,6 +62,11 @@ const styles = {
         resize: 'none', // מונע מתיחה של התיבה
         marginBottom: '10px',
         boxSizing: 'border-box'
+    },
+    actionRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
     },
     button: {
         backgroundColor: '#007bff',

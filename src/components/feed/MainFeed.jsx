@@ -130,19 +130,24 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
         };
     }, [selectedGroup._id, currentUserId, setSelectedGroup]);
 
-    const handlePublishPost = async (newContent) => {
+    const handlePublishPost = async (newContent, attachment) => {
         try {
             const token = localStorage.getItem('token');
+            const groupId = selectedGroup._id === "111111111111111111111111" ? "000000000000000000000000" : selectedGroup._id;
 
-            const response = await axios.post(API_URL,
-                {
-                    content: newContent,
-                    group: selectedGroup._id === "111111111111111111111111" ? "000000000000000000000000" : selectedGroup._id
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` }
+            const formData = new FormData();
+            formData.append('content', newContent);
+            formData.append('group', groupId);
+            if (attachment) {
+                formData.append('attachment', attachment);
+            }
+
+            const response = await axios.post(API_URL, formData, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
                 }
-            );
+            });
 
             const newlyCreatedPost = response.data;
             const isMyFeed = selectedGroup._id === "111111111111111111111111";

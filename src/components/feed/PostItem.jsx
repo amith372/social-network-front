@@ -70,7 +70,19 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
                     </div>
                 </div>
             ) : (
-                <p style={styles.content}>{post.content}</p>
+                <>
+                    <p style={styles.content}>{post.content}</p>
+                    {post.attachmentUrl && post.attachmentType === 'image' && (
+                        <div style={styles.attachmentContainer}>
+                            <img src={`https://social-network-backend-android2-project.onrender.com${post.attachmentUrl}`} alt="Post attachment" style={styles.attachment} />
+                        </div>
+                    )}
+                    {post.attachmentUrl && post.attachmentType === 'video' && (
+                        <div style={styles.attachmentContainer}>
+                            <video src={`https://social-network-backend-android2-project.onrender.com${post.attachmentUrl}`} controls style={styles.attachment}></video>
+                        </div>
+                    )}
+                </>
             )}
 
             <div style={styles.footer}>
@@ -130,5 +142,21 @@ const styles = {
         padding: '2px 8px',
         cursor: 'pointer',
         fontSize: '12px'
+    },
+    attachmentContainer: {
+        marginTop: '10px',
+        marginBottom: '15px',
+        maxWidth: '100%',
+        maxHeight: '400px',
+        overflow: 'hidden',
+        display: 'flex',
+        justifyContent: 'center',
+        backgroundColor: '#f1f1f1',
+        borderRadius: '8px'
+    },
+    attachment: {
+        maxWidth: '100%',
+        maxHeight: '400px',
+        objectFit: 'contain'
     }
 };
