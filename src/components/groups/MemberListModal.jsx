@@ -90,6 +90,25 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
         }
     };
 
+    const handleLeaveGroup = async () => {
+        if (!window.confirm("Are you sure you want to leave this group?")) return;
+        try {
+            const token = localStorage.getItem('token');
+            const headers = { Authorization: `Bearer ${token}` };
+
+            await axios.patch(`${GROUPS_API_URL}/${group._id}/leave`, {}, { headers });
+
+            if (onGroupUpdate) {
+                // If the user leaves, we might want to fallback to the default feed
+                onGroupUpdate({ _id: "111111111111111111111111", name: "My Feed" });
+            }
+            onClose();
+        } catch (err) {
+            console.error("Failed to leave group", err);
+            alert(err.response?.data?.message || "Failed to leave group");
+        }
+    };
+
     return (
         <div style={styles.overlay}>
             <div style={styles.modal}>
@@ -108,6 +127,9 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
                                     <span>{member.username} {group.admin === member._id ? '(Admin)' : ''}</span>
                                     {isAdmin && member._id !== currentUserId && (
                                         <button onClick={() => handleRemoveMember(member._id)} style={styles.removeBtn}>Remove</button>
+                                    )}
+                                    {member._id === currentUserId && (
+                                        <button onClick={handleLeaveGroup} style={styles.leaveBtn}>Leave Group</button>
                                     )}
                                 </li>
                             ))}
@@ -193,6 +215,15 @@ const styles = {
     removeBtn: {
         backgroundColor: '#dc3545',
         color: 'white',
+        border: 'none',
+        padding: '4px 8px',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontSize: '12px'
+    },
+    leaveBtn: {
+        backgroundColor: '#ffc107',
+        color: 'black',
         border: 'none',
         padding: '4px 8px',
         borderRadius: '4px',

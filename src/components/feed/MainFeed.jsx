@@ -94,6 +94,12 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             }
         });
 
+        socket.on('delete_group', (deletedGroupId) => {
+            if (selectedGroup._id === deletedGroupId) {
+                setSelectedGroup({ _id: "111111111111111111111111", name: "My Feed" });
+            }
+        });
+
         return () => {
             if (selectedGroup._id === "111111111111111111111111") {
                 socket.emit('leave my_feed', currentUserId);
@@ -164,6 +170,21 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
         }
     };
 
+    const handleDeleteGroup = async () => {
+        if (!window.confirm("Are you sure you want to permanently delete this group?")) return;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`https://social-network-backend-android2-project.onrender.com/api/groups/${selectedGroup._id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setSelectedGroup({ _id: "111111111111111111111111", name: "My Feed" });
+            setIsEditingGroup(false);
+        } catch (error) {
+            console.error("Failed to delete group:", error);
+            alert("Failed to delete group");
+        }
+    };
+
     return (
         <div style={{ position: 'relative' }}>
             {/* Header section with title and optional Members button */}
@@ -185,6 +206,9 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
                     <div style={{ display: 'flex', gap: '10px' }}>
                         <button onClick={handleSaveGroup} style={{ backgroundColor: '#28a745', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Save</button>
                         <button onClick={() => setIsEditingGroup(false)} style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Cancel</button>
+                        {selectedGroup.members && selectedGroup.members.length === 1 && (
+                            <button onClick={handleDeleteGroup} style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginLeft: 'auto' }}>Delete Group</button>
+                        )}
                     </div>
                 </div>
             ) : (

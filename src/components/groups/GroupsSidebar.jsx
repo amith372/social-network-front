@@ -77,8 +77,45 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
 
         socket.on('update_group', (updatedGroup) => {
             if (updatedGroup.isGroupChat === true) {
-                setGroups((prev) => prev.map(g => g._id === updatedGroup._id ? updatedGroup : g));
+                const token = localStorage.getItem('token');
+                if (token) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        const myUserId = payload.id;
+
+                        const isMember = updatedGroup.members.some(m =>
+                            (typeof m === 'object' ? m._id : m) === myUserId
+                        );
+
+                        if (!isMember) {
+                            setGroups(prev => prev.filter(g => g._id !== updatedGroup._id));
+                        } else {
+                            setGroups(prev => prev.map(g => g._id === updatedGroup._id ? updatedGroup : g));
+                        }
+                    } catch (e) {
+                        console.error("Error decoding token for socket", e);
+                    }
+                }
             }
+        });
+
+        socket.on('delete_group', (deletedGroupId) => {
+            setGroups(prev => prev.filter(g => g._id !== deletedGroupId));
+        });
+
+        socket.on('new_user', (newUser) => {
+            setAllUsers(prev => {
+                if (prev.find(u => u._id === newUser._id)) return prev;
+                return [...prev, newUser];
+            });
+        });
+
+        socket.on('update_user', (updatedUser) => {
+            setAllUsers(prev => prev.map(u => u._id === updatedUser._id ? updatedUser : u));
+        });
+
+        socket.on('delete_user', (deletedUserId) => {
+            setAllUsers(prev => prev.filter(u => u._id !== deletedUserId));
         });
 
         return () => socket.disconnect();
