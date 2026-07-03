@@ -122,8 +122,20 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
 
                         if (!isMember) {
                             setGroups(prev => prev.filter(g => g._id !== updatedGroup._id));
+                            setSelectedGroup(prev => {
+                                if (prev && prev._id === updatedGroup._id) {
+                                    return { _id: "111111111111111111111111", name: "My Feed" };
+                                }
+                                return prev;
+                            });
                         } else {
                             setGroups(prev => prev.map(g => g._id === updatedGroup._id ? updatedGroup : g));
+                            setSelectedGroup(prev => {
+                                if (prev && prev._id === updatedGroup._id) {
+                                    return updatedGroup;
+                                }
+                                return prev;
+                            });
                         }
 
                         setAllPublicGroups(prev => prev.map(g => g._id === updatedGroup._id ? updatedGroup : g));
@@ -137,6 +149,12 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
 
         socket.on('delete_group', (deletedGroupId) => {
             setGroups(prev => prev.filter(g => g._id !== deletedGroupId));
+            setSelectedGroup(prev => {
+                if (prev && prev._id === deletedGroupId) {
+                    return { _id: "111111111111111111111111", name: "My Feed" };
+                }
+                return prev;
+            });
         });
 
         socket.on('new_user', (newUser) => {
@@ -155,7 +173,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
         });
 
         return () => socket.disconnect();
-    }, []);
+    }, [setSelectedGroup]);
 
     const handleUserCheckboxChange = (userId) => {
         if (selectedUsers.includes(userId)) {
