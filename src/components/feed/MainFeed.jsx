@@ -143,7 +143,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             }
 
             const response = await axios.post(API_URL, formData, {
-                headers: { 
+                headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
                 }

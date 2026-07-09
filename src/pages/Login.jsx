@@ -9,8 +9,8 @@ export default function Login({ onLoginSuccess }) {
         password: ''
     });
     const [errorMsg, setErrorMsg] = useState('');
-    const [isLoading, setIsLoading] = useState(false); 
-    
+    const [isLoading, setIsLoading] = useState(false);
+
     const navigate = useNavigate();
 
 
@@ -25,10 +25,10 @@ export default function Login({ onLoginSuccess }) {
     };
 
     const handleLogin = async (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
         setErrorMsg('');
         setIsLoading(true); // turn on loading state when the request starts
-        
+
         try {
             // send the formData object directly to the server
             const response = await axios.post(API_URL, formData);
@@ -36,10 +36,10 @@ export default function Login({ onLoginSuccess }) {
             // saving the token to local storage for future authenticated requests
             localStorage.setItem('token', response.data.token);
             const fetchedUsername = response.data.user.username || "User";
-            
+
             onLoginSuccess(fetchedUsername, response.data.token);
             navigate('/', { replace: true });
-            
+
         } catch (error) {
             console.error("Full Error Object:", error);
 
@@ -62,45 +62,45 @@ export default function Login({ onLoginSuccess }) {
     return (
         <div style={{ padding: '20px', textAlign: 'center' }}>
             <h2>Login to Social Network</h2>
-            
+
             {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
 
             <form onSubmit={handleLogin} style={{ display: 'inline-block', textAlign: 'left' }}>
                 <div style={{ marginBottom: '10px' }}>
                     <label htmlFor="email">Email: </label><br />
-                    <input 
-                        type="email" 
+                    <input
+                        type="email"
                         id="email"
-                        name="email" 
-                        value={formData.email} 
-                        onChange={handleChange} 
-                        required 
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        required
                     />
                 </div>
                 <div style={{ marginBottom: '15px' }}>
                     <label htmlFor="password">Password: </label><br />
-                    <input 
-                        type="password" 
+                    <input
+                        type="password"
                         id="password"
-                        name="password" 
-                        value={formData.password} 
-                        onChange={handleChange} 
-                        required 
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
                     />
                 </div>
-                
+
                 {/* disbales button upon login */}
-                <button 
-                    type="submit" 
+                <button
+                    type="submit"
                     disabled={isLoading}
-                    style={{ 
-                        width: '100%', 
-                        padding: '5px', 
+                    style={{
+                        width: '100%',
+                        padding: '5px',
                         backgroundColor: isLoading ? '#6c757d' : '#007bff',
-                        color: 'white', 
-                        border: 'none', 
-                        borderRadius: '4px', 
-                        cursor: isLoading ? 'not-allowed' : 'pointer' 
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: isLoading ? 'not-allowed' : 'pointer'
                     }}
                 >
                     {isLoading ? 'Logging in...' : 'Login'}

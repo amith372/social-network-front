@@ -1,11 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, onPostDelete }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content);
+    const [attachmentSrc, setAttachmentSrc] = useState(null);
 
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/posts';
+    const BASE_URL = 'https://social-network-backend-android2-project.onrender.com';
+
+    useEffect(() => {
+        if (post.attachmentUrl) {
+            if (post.attachmentUrl.startsWith('http')) {
+                setAttachmentSrc(post.attachmentUrl);
+            } else {
+                const fetchMedia = async () => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await axios.get(`${BASE_URL}${post.attachmentUrl}`, {
+                            responseType: 'blob',
+                            headers: token ? { Authorization: `Bearer ${token}` } : {}
+                        });
+                        const objectUrl = URL.createObjectURL(response.data);
+                        setAttachmentSrc(objectUrl);
+                    } catch (error) {
+                        console.error('Error fetching media:', error);
+                    }
+                };
+                fetchMedia();
+            }
+        }
+    }, [post.attachmentUrl]);
 
     const formatTimestamp = (dateString) => {
         if (!dateString) return '';
@@ -72,16 +97,16 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
             ) : (
                 <>
                     <p style={styles.content}>{post.content}</p>
-                    {post.attachmentUrl && post.attachmentType === 'image' && (
+                    {post.attachmentUrl && post.attachmentType === 'image' && attachmentSrc && (
                         <div style={styles.attachmentContainer}>
                             {/* Removed the hardcoded Render URL */}
-                            <img src={post.attachmentUrl} alt="Post attachment" style={styles.attachment} />
+                            <img src={attachmentSrc} alt="Post attachment" style={styles.attachment} />
                         </div>
                     )}
-                    {post.attachmentUrl && post.attachmentType === 'video' && (
+                    {post.attachmentUrl && post.attachmentType === 'video' && attachmentSrc && (
                         <div style={styles.attachmentContainer}>
                             {/* Removed the hardcoded Render URL */}
-                            <video src={post.attachmentUrl} controls style={styles.attachment}></video>
+                            <video src={attachmentSrc} controls style={styles.attachment}></video>
                         </div>
                     )}
                 </>
