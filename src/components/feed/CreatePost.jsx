@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 export default function CreatePost({ onPublish }) {
     const [postContent, setPostContent] = useState('');
 
     const [attachment, setAttachment] = useState(null);
+
+    const fileInputRef = useRef(null);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -17,6 +19,11 @@ export default function CreatePost({ onPublish }) {
         // מנקה את התיבות אחרי הפרסום
         setPostContent('');
         setAttachment(null);
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+
     };
 
     return (
@@ -29,10 +36,10 @@ export default function CreatePost({ onPublish }) {
                     onChange={(e) => setPostContent(e.target.value)}
                     rows="3"
                 />
-                
+
                 <div style={styles.actionRow}>
-                    <input 
-                        type="file" 
+                    <input
+                        type="file"
                         accept="image/*,video/*"
                         onChange={(e) => setAttachment(e.target.files[0])}
                         style={{ fontSize: '14px' }}

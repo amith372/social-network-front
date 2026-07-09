@@ -59,9 +59,9 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
         <div style={styles.card}>
             {isEditing ? (
                 <div>
-                    <textarea 
-                        value={editContent} 
-                        onChange={(e) => setEditContent(e.target.value)} 
+                    <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
                         style={{ width: '100%', minHeight: '60px', padding: '5px' }}
                     />
                     <div style={{ marginTop: '5px', display: 'flex', gap: '5px' }}>
@@ -74,12 +74,14 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
                     <p style={styles.content}>{post.content}</p>
                     {post.attachmentUrl && post.attachmentType === 'image' && (
                         <div style={styles.attachmentContainer}>
-                            <img src={`https://social-network-backend-android2-project.onrender.com${post.attachmentUrl}`} alt="Post attachment" style={styles.attachment} />
+                            {/* Removed the hardcoded Render URL */}
+                            <img src={post.attachmentUrl} alt="Post attachment" style={styles.attachment} />
                         </div>
                     )}
                     {post.attachmentUrl && post.attachmentType === 'video' && (
                         <div style={styles.attachmentContainer}>
-                            <video src={`https://social-network-backend-android2-project.onrender.com${post.attachmentUrl}`} controls style={styles.attachment}></video>
+                            {/* Removed the hardcoded Render URL */}
+                            <video src={post.attachmentUrl} controls style={styles.attachment}></video>
                         </div>
                     )}
                 </>
@@ -89,7 +91,7 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
                 <small style={styles.author}>
                     Posted by: {authorName} {!isPublic && groupName ? ` in ${groupName}` : ''}
                 </small>
-                
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {(canEdit || canDelete) && !isEditing && (
                         <div style={{ display: 'flex', gap: '5px' }}>
