@@ -41,6 +41,7 @@ export default function CreatePost({ onPublish }) {
                     <input
                         type="file"
                         accept="image/*,video/*"
+                        ref={fileInputRef}
                         onChange={(e) => setAttachment(e.target.files[0])}
                         style={{ fontSize: '14px' }}
                     />
