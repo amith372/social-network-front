@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, onPostDelete }) {
+
+    // State for managing edit mode, edited content, and media source
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content);
     const [attachmentSrc, setAttachmentSrc] = useState(null);
@@ -9,11 +11,15 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/posts';
     const BASE_URL = 'https://social-network-backend-android2-project.onrender.com';
 
+    // Fetches media attachments when the component mounts or the URL changes
     useEffect(() => {
         if (post.attachmentUrl) {
+
+            // If its an external link
             if (post.attachmentUrl.startsWith('http')) {
                 setAttachmentSrc(post.attachmentUrl);
             } else {
+                //  If it's a local/protected file, fetch it via API
                 const fetchMedia = async () => {
                     try {
                         const token = localStorage.getItem('token');
@@ -21,6 +27,7 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
                             responseType: 'blob',
                             headers: token ? { Authorization: `Bearer ${token}` } : {}
                         });
+                        // Create a local object URL
                         const objectUrl = URL.createObjectURL(response.data);
                         setAttachmentSrc(objectUrl);
                     } catch (error) {
@@ -32,6 +39,7 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
         }
     }, [post.attachmentUrl]);
 
+    // Formats the timestamp as HH:MM DD.MM.YYYY
     const formatTimestamp = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
@@ -43,12 +51,14 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
         return `${hours}:${minutes} ${day}.${month}.${year}`;
     };
 
+    // Saves the edited post content to the server
     const handleSave = async () => {
         try {
             const token = localStorage.getItem('token');
             const res = await axios.put(`${API_URL}/${post._id}`, { content: editContent }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            // Updates the parent component and exits edit mode
             onPostUpdate(res.data);
             setIsEditing(false);
         } catch (err) {
@@ -57,6 +67,7 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
         }
     };
 
+    // Deletes the post after asking for user confirmation
     const handleDelete = async () => {
         if (!window.confirm("Are you sure you want to delete this post?")) return;
         try {
@@ -71,12 +82,14 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
         }
     };
 
+    // Check permissions to see if the current user can edit or delete this post
     const authorName = post.author?.username || 'Unknown User';
     const authorId = post.author?._id || post.author;
     const isAuthor = authorId === currentUserId;
     const canDelete = isAdmin || isAuthor;
     const canEdit = isAuthor;
 
+    // Check if the post belongs to a specific group or is public
     const groupName = post.group?.name;
     const isPublic = !post.group || post.group === "000000000000000000000000" || post.group._id === "000000000000000000000000";
 
@@ -99,13 +112,11 @@ export default function PostItem({ post, currentUserId, isAdmin, onPostUpdate, o
                     <p style={styles.content}>{post.content}</p>
                     {post.attachmentUrl && post.attachmentType === 'image' && attachmentSrc && (
                         <div style={styles.attachmentContainer}>
-                            {/* Removed the hardcoded Render URL */}
                             <img src={attachmentSrc} alt="Post attachment" style={styles.attachment} />
                         </div>
                     )}
                     {post.attachmentUrl && post.attachmentType === 'video' && attachmentSrc && (
                         <div style={styles.attachmentContainer}>
-                            {/* Removed the hardcoded Render URL */}
                             <video src={attachmentSrc} controls style={styles.attachment}></video>
                         </div>
                     )}

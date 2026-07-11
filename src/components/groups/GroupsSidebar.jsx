@@ -2,23 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 
-// 1. מקבלים את selectedGroup ו-setSelectedGroup
+// Receive selectedGroup and setSelectedGroup
 export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
     const [groups, setGroups] = useState([]);
     const [allPublicGroups, setAllPublicGroups] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [errorMsg, setErrorMsg] = useState('');
 
-    // --- State של יצירת קבוצה ---
+    // Group creation state
     const [isCreating, setIsCreating] = useState(false);
     const [newGroupName, setNewGroupName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // --- State חדש עבור בחירת משתמשים לקבוצה ---
+    // New state for selecting users for a group
     const [allUsers, setAllUsers] = useState([]);
     const [selectedUsers, setSelectedUsers] = useState([]);
 
-    // --- State של החיפוש והטאבים ---
+    // Search and tabs state
     const [activeTab, setActiveTab] = useState('myGroups');
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
@@ -29,7 +29,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
         searchQueryRef.current = searchQuery;
     }, [searchQuery]);
 
-    // Parse currentUserId
+    // Parse currentUserId from token
     const token = localStorage.getItem('token');
     let currentUserId = null;
     if (token) {
@@ -42,6 +42,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
     const USERS_API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users';
 
     useEffect(() => {
+        // Fetch user groups, public groups, and all users
         const fetchData = async () => {
             try {
                 const token = localStorage.getItem('token');
@@ -67,6 +68,8 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
         fetchData();
 
         const socket = io('https://social-network-backend-android2-project.onrender.com');
+
+        // Listen for new group creation
         socket.on('new_group', (newGroup) => {
             if (newGroup.isGroupChat === true) {
                 const token = localStorage.getItem('token');
@@ -108,6 +111,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
             }
         });
 
+        // Listen for group updates
         socket.on('update_group', (updatedGroup) => {
             if (updatedGroup.isGroupChat === true) {
                 const token = localStorage.getItem('token');
@@ -147,6 +151,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
             }
         });
 
+        // Listen for group deletions
         socket.on('delete_group', (deletedGroupId) => {
             setGroups(prev => prev.filter(g => g._id !== deletedGroupId));
             setSelectedGroup(prev => {
@@ -157,6 +162,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
             });
         });
 
+        // Listen for user registrations
         socket.on('new_user', (newUser) => {
             setAllUsers(prev => {
                 if (prev.find(u => u._id === newUser._id)) return prev;
@@ -164,10 +170,11 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
             });
         });
 
+        // Listen for user updates and deletions
         socket.on('update_user', (updatedUser) => {
             setAllUsers(prev => prev.map(u => u._id === updatedUser._id ? updatedUser : u));
         });
-
+        //listen for user deletions
         socket.on('delete_user', (deletedUserId) => {
             setAllUsers(prev => prev.filter(u => u._id !== deletedUserId));
         });
@@ -175,6 +182,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
         return () => socket.disconnect();
     }, [setSelectedGroup]);
 
+    // Toggle user selection in the checkbox list
     const handleUserCheckboxChange = (userId) => {
         if (selectedUsers.includes(userId)) {
             setSelectedUsers(selectedUsers.filter(id => id !== userId));
@@ -183,6 +191,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
         }
     };
 
+    // Submit new group data to the server
     const handleCreateGroup = async (e) => {
         e.preventDefault();
         if (!newGroupName.trim()) return;
@@ -205,7 +214,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                 return [...prev, newGroup];
             });
 
-            // 2. מעבירים את אובייקט הקבוצה החדש בשלמותו!
+            // Pass the complete new group object
             setSelectedGroup(newGroup);
 
             setNewGroupName('');
@@ -219,6 +228,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
         }
     };
 
+    // Filter groups by search query
     const handleSearch = (e) => {
         e.preventDefault();
         if (!searchQuery.trim()) {
@@ -231,6 +241,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
         setIsSearching(false);
     };
 
+    // Send a request to join a public group
     const handleJoinRequest = async (groupId) => {
         try {
             const token = localStorage.getItem('token');
@@ -423,7 +434,7 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
             </div>
         </div>
     );
-} // <--- הוספתי את הסוגר המסולסל הזה שהיה חסר
+}
 
 const styles = {
     sidebarContainer: { display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', fontFamily: 'sans-serif' },

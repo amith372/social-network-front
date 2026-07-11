@@ -12,6 +12,7 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
     const GROUPS_API_URL = 'https://social-network-backend-android2-project.onrender.com/api/groups';
 
     useEffect(() => {
+        // Fetch all users and categorize them based on group membership and join requests
         const fetchUsers = async () => {
             try {
                 const token = localStorage.getItem('token');
@@ -28,6 +29,7 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
                 const memberIds = (group.members || []).map(m => typeof m === 'object' ? m._id : m);
                 const requestIds = (group.joinRequests || []).map(r => typeof r === 'object' ? r._id : r);
 
+                // Categorize users into current members, pending requests, and non-members
                 const groupMembers = res.data.filter(u => memberIds.includes(u._id));
                 const joinRequestUsers = res.data.filter(u => requestIds.includes(u._id));
                 const nonMembers = res.data.filter(u => !memberIds.includes(u._id) && !requestIds.includes(u._id));
@@ -44,6 +46,7 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
         fetchUsers();
     }, [group, currentUserId]);
 
+    // Remove a specific member from the group
     const handleRemoveMember = async (userId) => {
         if (!window.confirm("Are you sure you want to remove this member?")) return;
         try {
@@ -55,6 +58,7 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
 
             await axios.put(`${GROUPS_API_URL}/${group._id}`, { members: updatedMemberIds }, { headers });
 
+            // Update local state to reflect the removed member
             const removedUser = members.find(m => m._id === userId);
             setMembers(members.filter(m => m._id !== userId));
             if (removedUser) {
@@ -69,6 +73,7 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
         }
     };
 
+    // Add a selected non member to the group
     const handleAddMember = async () => {
         if (!selectedNewUser) return;
         try {
@@ -79,6 +84,7 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
 
             await axios.put(`${GROUPS_API_URL}/${group._id}`, { members: updatedMemberIds }, { headers });
 
+            // Update local state to reflect the newly added member
             const addedUser = allUsers.find(u => u._id === selectedNewUser);
             if (addedUser) {
                 setMembers([...members, addedUser]);
@@ -94,6 +100,7 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
         }
     };
 
+    // Allow the current user to leave the group
     const handleLeaveGroup = async () => {
         if (!window.confirm("Are you sure you want to leave this group?")) return;
         try {
@@ -113,6 +120,7 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
         }
     };
 
+    // Accept a users request to join the group
     const handleAcceptRequest = async (userId) => {
         try {
             const token = localStorage.getItem('token');
@@ -130,6 +138,7 @@ export default function MemberListModal({ group, currentUserId, isAdmin, onClose
         }
     };
 
+    // Reject a users request to join the group
     const handleRejectRequest = async (userId) => {
         try {
             const token = localStorage.getItem('token');

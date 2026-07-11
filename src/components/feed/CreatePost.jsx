@@ -7,16 +7,17 @@ export default function CreatePost({ onPublish }) {
 
     const fileInputRef = useRef(null);
 
+    // Handles the form submission to create a new post
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // מונע שליחת פוסט ריק אם אין גם טקסט וגם אין קובץ
+        // Prevents sending an empty post if there is no text and no file
         if (!postContent.trim() && !attachment) return;
 
-        // מפעיל את הפונקציה שנקבל מההורה (MainFeed)
+        // Triggers the function passed from the parent component
         onPublish(postContent, attachment);
 
-        // מנקה את התיבות אחרי הפרסום
+        // Clears the inputs after posting
         setPostContent('');
         setAttachment(null);
 
@@ -67,7 +68,7 @@ const styles = {
         padding: '10px',
         borderRadius: '4px',
         border: '1px solid #ccc',
-        resize: 'none', // מונע מתיחה של התיבה
+        resize: 'none', // Prevents resizing of the text area
         marginBottom: '10px',
         boxSizing: 'border-box'
     },

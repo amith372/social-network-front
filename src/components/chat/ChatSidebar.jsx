@@ -7,7 +7,7 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
     const [isLoading, setIsLoading] = useState(true);
     const [errorMsg, setErrorMsg] = useState('');
 
-    // --- State for creating private chat ---
+    // State for creating private chat
     const [allUsers, setAllUsers] = useState([]);
     const [isCreating, setIsCreating] = useState(false);
     const [selectedUser, setSelectedUser] = useState('');
@@ -23,6 +23,7 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/groups';
     const USERS_API_URL = 'https://social-network-backend-android2-project.onrender.com/api/users';
 
+    // Finds the name of the other person in the private chat
     const getChatDisplayName = (chat, fetchedUsers, currentUsername) => {
         const members = (chat?.members || []).map(m => {
             if (typeof m === 'object' && m !== null) {
@@ -53,6 +54,7 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
     };
 
     useEffect(() => {
+        // Fetches all private chats, users, and available languages from the server.
         const fetchPrivateChats = async () => {
             try {
                 const token = localStorage.getItem('token');
@@ -92,6 +94,7 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
         };
         fetchPrivateChats();
 
+        // Connects to the socket server to listen for new chats and user updates in realtime
         const socket = io('https://social-network-backend-android2-project.onrender.com');
         socket.on('new_group', (newGroup) => {
             if (newGroup.isGroupChat === false) {
@@ -143,6 +146,7 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
         return () => socket.disconnect();
     }, []);
 
+    // Creates a new private chat with the selected user and adds it to the list
     const handleStartPrivateChat = async (e) => {
         e.preventDefault();
         if (!selectedUser) return;
@@ -278,10 +282,10 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                             <option value="" disabled>Select a user...</option>
                             {allUsers
                                 .filter(u => {
-                                    // 1. Exclude self
+                                    // Exclude self
                                     if (u.username === currentUsername) return false;
 
-                                    // 2. Exclude users we already have a private chat with
+                                    // Exclude users we already have a private chat with
                                     const hasExistingChat = privateChats.some(chat =>
                                         chat.members.some(m => {
                                             const idStr = typeof m === 'object' ? m._id : m;
@@ -290,7 +294,7 @@ export default function ChatSidebar({ selectedGroup, setSelectedGroup }) {
                                     );
                                     if (hasExistingChat) return false;
 
-                                    // 3. Apply all search filters
+                                    // Apply all search filters
                                     if (searchUsername.trim() !== '') {
                                         if (!u.username || !u.username.toLowerCase().includes(searchUsername.toLowerCase().trim())) return false;
                                     }

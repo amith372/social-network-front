@@ -6,7 +6,7 @@ import MemberListModal from '../groups/MemberListModal';
 
 import { io } from 'socket.io-client';
 
-// 1. מקבלים את selectedGroupId כ-Prop במקום להגדיר אותו כקבוע
+// This component represents the main feed of posts
 export default function MainFeed({ selectedGroup, setSelectedGroup }) {
     const [posts, setPosts] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -36,14 +36,13 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
         }
     }
 
+    // Check if the current user is the administrator of the selected group
     const isAdmin = selectedGroup && selectedGroup.admin === currentUserId;
 
     const API_URL = 'https://social-network-backend-android2-project.onrender.com/api/posts';
 
-    // 3. החלק הכי חשוב כאן! 
-    // ברגע שאנחנו מכניסים את selectedGroupId לתוך מערך התלויות (סוגריים מרובעים), 
-    // React יריץ את fetchPosts מחדש בכל פעם שהמשתמש יחליף קבוצה!
     useEffect(() => {
+        // Fetch posts for the selected group and initialize socket connections
         const fetchPosts = async () => {
             setIsLoading(true);
             setErrorMsg('');
@@ -73,6 +72,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             socket.emit('join room', selectedGroup._id);
         }
 
+        // Listen for new posts in real-time
         socket.on('new_post', (newPost) => {
             setPosts((prevPosts) => {
                 // Prevent duplicate posts if this user was the author and we already appended it locally
@@ -83,14 +83,17 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             });
         });
 
+        // Listen for post edits
         socket.on('update_post', (updatedPost) => {
             setPosts((prevPosts) => prevPosts.map(p => p._id === updatedPost._id ? updatedPost : p));
         });
 
+        // Listen for post deletions
         socket.on('delete_post', (postId) => {
             setPosts((prevPosts) => prevPosts.filter(p => p._id !== postId));
         });
 
+        // Listen for group updates to keep the sidebar and current view synchronized
         socket.on('update_group', (updatedGroup) => {
             if (selectedGroup._id === updatedGroup._id) {
                 setSelectedGroup(updatedGroup);
@@ -105,6 +108,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             }
         });
 
+        // Listen for new group creations and join if user is a member
         socket.on('new_group', (newGroup) => {
             if (selectedGroup._id === "111111111111111111111111") {
                 const isMember = newGroup.members.some(m => (typeof m === 'object' ? m._id : m) === currentUserId);
@@ -114,6 +118,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
             }
         });
 
+        // Cleanup function to leave socket rooms and disconnect on unmount
         socket.on('delete_group', (deletedGroupId) => {
             if (selectedGroup._id === deletedGroupId) {
                 setSelectedGroup({ _id: "111111111111111111111111", name: "My Feed" });
@@ -130,6 +135,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
         };
     }, [selectedGroup._id, currentUserId, setSelectedGroup]);
 
+    // Handle creating a new post with text and optional file attachment
     const handlePublishPost = async (newContent, attachment) => {
         try {
             const token = localStorage.getItem('token');
@@ -166,14 +172,17 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
         }
     };
 
+    // Update a specific post in the local state
     const handlePostUpdate = (updatedPost) => {
         setPosts(prevPosts => prevPosts.map(p => p._id === updatedPost._id ? updatedPost : p));
     };
 
+    //  Remove a specific post from the local state
     const handlePostDelete = (postId) => {
         setPosts(prevPosts => prevPosts.filter(p => p._id !== postId));
     };
 
+    // Submit updated group details to the server
     const handleSaveGroup = async () => {
         if (!editGroupName.trim()) {
             alert("Group name cannot be empty");
@@ -195,6 +204,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
         }
     };
 
+    // Permanently delete the currently selected group
     const handleDeleteGroup = async () => {
         if (!window.confirm("Are you sure you want to permanently delete this group?")) return;
         try {
@@ -210,6 +220,7 @@ export default function MainFeed({ selectedGroup, setSelectedGroup }) {
         }
     };
 
+    // Filter posts in the main feed based on search criteria (only active in 'My Feed')
     const filteredPosts = posts.filter(post => {
         if (selectedGroup._id !== "111111111111111111111111") return true;
 
