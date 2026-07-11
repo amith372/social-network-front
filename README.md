@@ -46,6 +46,11 @@ frontend/
 ├── package.json             # Frontend dependencies and npm scripts
 └── README.md                # Frontend documentation
 ```
+
+## Website Main page preview
+<img width="876" height="907" alt="Screenshot 2026-07-11 195839" src="https://github.com/user-attachments/assets/9a72f25c-5528-461f-b525-e004defe70d7" />
+
+
 ## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
