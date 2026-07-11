@@ -11,6 +11,41 @@
 
 This repository contains the FrontEnd react service for a real-time social/chat application. It user RESTful APIs for user management, group chats, post feeds, and statistical data, along with real-time bidirectional communication using Socket.IO, and it uses react to display all the features
 
+## Frontend Project Structure
+
+```text
+frontend/
+├── src/
+│   ├── components/          # Reusable UI components
+│   │   ├── chat/            # Chat interface components
+│   │   │   └── ChatSidebar.jsx
+│   │   ├── feed/            # Post and timeline components
+│   │   │   ├── CreatePost.jsx
+│   │   │   ├── MainFeed.jsx
+│   │   │   └── PostItem.jsx
+│   │   ├── graphs/          # Data visualization and charts
+│   │   │   └── StatisticsCharts.jsx
+│   │   ├── groups/          # Group management components
+│   │   │   ├── GroupsSidebar.jsx
+│   │   │   └── MemberListModal.jsx
+│   │   └── Navbar.js        # Main navigation bar
+│   ├── pages/               # Main application views/routes
+│   │   ├── Home.jsx
+│   │   ├── Login.jsx
+│   │   └── Register.jsx
+│   ├── App.css              # Main application styles
+│   ├── App.js               # Root React component
+│   ├── App.test.js          # Tests for the App component
+│   ├── index.css            # Base/Global CSS styles
+│   ├── index.js             # React application entry point
+│   ├── logo.svg             # Application logo assets
+│   ├── reportWebVitals.js   # Performance measuring utility
+│   └── setupTests.js        # Testing configuration setup
+├── .gitignore               # Files and folders ignored by Git
+├── package-lock.json        # Exact dependency tree lockfile
+├── package.json             # Frontend dependencies and npm scripts
+└── README.md                # Frontend documentation
+
 ## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
