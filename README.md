@@ -45,7 +45,7 @@ frontend/
 ├── package-lock.json        # Exact dependency tree lockfile
 ├── package.json             # Frontend dependencies and npm scripts
 └── README.md                # Frontend documentation
-
+```
 ## Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
