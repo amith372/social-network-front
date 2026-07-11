@@ -133,7 +133,10 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                                 return prev;
                             });
                         } else {
-                            setGroups(prev => prev.map(g => g._id === updatedGroup._id ? updatedGroup : g));
+                            setGroups(prev => {
+                                const exists = prev.find(g => g._id === updatedGroup._id);
+                                return exists ? prev.map(g => g._id === updatedGroup._id ? updatedGroup : g) : [...prev, updatedGroup];
+                            });
                             setSelectedGroup(prev => {
                                 if (prev && prev._id === updatedGroup._id) {
                                     return updatedGroup;
@@ -142,8 +145,22 @@ export default function GroupsSidebar({ selectedGroup, setSelectedGroup }) {
                             });
                         }
 
-                        setAllPublicGroups(prev => prev.map(g => g._id === updatedGroup._id ? updatedGroup : g));
-                        setSearchResults(prev => prev.map(g => g._id === updatedGroup._id ? updatedGroup : g));
+                        setAllPublicGroups(prev => {
+                            const exists = prev.find(g => g._id === updatedGroup._id);
+                            return exists ? prev.map(g => g._id === updatedGroup._id ? updatedGroup : g) : [...prev, updatedGroup];
+                        });
+                        setSearchResults(prev => {
+                            const exists = prev.find(g => g._id === updatedGroup._id);
+                            if (exists) {
+                                return prev.map(g => g._id === updatedGroup._id ? updatedGroup : g);
+                            } else {
+                                const currentQuery = searchQueryRef.current;
+                                if (!currentQuery.trim() || updatedGroup.name.toLowerCase().includes(currentQuery.toLowerCase())) {
+                                    return [...prev, updatedGroup];
+                                }
+                                return prev;
+                            }
+                        });
                     } catch (e) {
                         console.error("Error decoding token for socket", e);
                     }
