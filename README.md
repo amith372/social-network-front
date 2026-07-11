@@ -46,6 +46,8 @@ frontend/
 ├── package.json             # Frontend dependencies and npm scripts
 └── README.md                # Frontend documentation
 ```
+## Main Feed with top bar
+<img width="1919" height="628" alt="3nculGJ - Imgur" src="https://github.com/user-attachments/assets/6e23711f-072c-487e-8793-836d18d4c0e0" />
 
 ## Website Main page preview
 <img width="876" height="907" alt="Screenshot 2026-07-11 195839" src="https://github.com/user-attachments/assets/9a72f25c-5528-461f-b525-e004defe70d7" />
